@@ -1,0 +1,58 @@
+﻿@page
+@model Thesis.Areas.Identity.Pages.Account.Manage.MessagesModel
+@{
+    ViewData["Title"] = "Messages";
+    ViewData["ActivePage"] = ManageNavPages.Messages;
+}
+
+<div class="page-manage-content">
+    <h1 class="page_title">@ViewData["Title"]</h1>
+    @if (Model.UserMessages.Count() > 0)
+    {
+        <table class="w-100 messages">
+            <tbody>
+                @foreach (var item in Model.UserMessages)
+                {
+                    <tr class="message message--thread-block message--read">
+                        <td>
+                            @if (Model.UnreadMessagesFromOneUser.Count() > 0)
+                            {
+                                foreach (var unreadMsg in Model.UnreadMessagesFromOneUser)
+                                {
+                                    if (@item.Value[0] == unreadMsg.Key)
+                                    {
+                                        if (unreadMsg.Value > 0)
+                                        {
+                                            <small>@unreadMsg.Value</small>
+                                        }
+                                    }
+                                }
+                            }
+                        </td>
+
+                        <td class="message_sender">
+                            <a asp-page="MessagesDetails" asp-route-id="@item.Key" class="link">
+                                <i class="icon fas fa-envelope-open"></i>
+                                <span>@item.Value[1] @item.Value[2]</span>
+                            </a>
+                        </td>
+
+                        <td class="message_sent-date message_date">
+                            <time datetime="@item.Value[3]">@item.Value[3]</time>
+                        </td>
+                    </tr>
+
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <h2>Nothing found</h2>
+        <p>Head over to <a asp-page="/Listings/Index" class="manage-link">Listings</a> and repy to a listing or go to <a asp-page="/Requests/Index" class="manage-link">Requests</a> make an offer to an existing request!</p>
+    }
+</div>
+
+
+
+

@@ -1,0 +1,538 @@
+﻿@page
+@model Thesis.Pages.Listings.IndexModel
+@using Microsoft.AspNetCore.Identity
+@using Thesis.Model
+@using Thesis.Areas.Identity.Pages.Account.Manage
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@{
+    ViewData["Title"] = "Listings";
+    ViewData["ActivePage"] = ManageNavPages.Listings;
+}
+
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+
+@if (Model.CurrentCategory != null)
+{
+    <section class="header-hero listing-category listing-category--view-page">
+        <div class="header-hero_content">
+            <div class="listing-category_header">
+                <div class="listing-category_item-count listing-category_count">@Model.Listings.Count() Listings</div>
+                <h1 class="listing-category_name">
+                    @if (Model.SelectedListingCategory.CategoryIcon != null)
+                    {
+                        <i class="@Model.SelectedListingCategory.CategoryIcon"></i>
+                    }
+                    @Model.SelectedListingCategory.CategoryName
+                </h1>
+                @if (Model.SelectedListingCategory.CategoryDescription != null)
+                {
+                    <div class="listing-category_description">@Model.SelectedListingCategory.CategoryDescription</div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<header class="page_header">
+    <form asp-page="Index" class="form--wide form--primary block form form--vendor-search" method="get" data-component="form">
+        <div class="form_fields">
+            <div class="form_field form_field--search">
+                <input type="search" name="searchStr" value="@Model.CurrentSearch" placeholder="Keywords" maxlength="256" class="field field--search">
+                @if (Model.CurrentCategory != null)
+                {
+                    <input type="hidden" name="category" value="@Model.CurrentCategory">
+                }
+                @if (Model.CurrentTags != null)
+                {
+                    <input type="hidden" name="tags" value="@Model.CurrentTags">
+                }
+                @if (Model.CurrentHourlyRateMin != null)
+                {
+                    <input type="hidden" name="hourlyRateMin" value="@Model.CurrentHourlyRateMin">
+                }
+                @if (Model.CurrentHourlyRateMax != null)
+                {
+                    <input type="hidden" name="hourlyRateMax" value="@Model.CurrentHourlyRateMax">
+                }
+                @if (Model.CurrentAvailability != null)
+                {
+                    <input type="hidden" name="availability" value="@Model.CurrentAvailability">
+                }
+                @if (Model.CurrentSort != null)
+                {
+                    <input type="hidden" name="sortOrder" value="@Model.CurrentSort">
+                }
+            </div>
+        </div>
+        <div class="form_footer">
+            <button type="submit" class="form_button btn btn-primary btn-lg alt field field--submit">
+                <span>Search</span>
+            </button>
+        </div>
+    </form>
+    <button type="button" class="btn btn-lg button button--wide button--mobile button--vendor-filter" data-toggle="modal" data-target="#filterModalCenter" onclick="showModal()">
+        <i class="icon fas fa-sliders-h"></i>
+        <span>Filter</span>
+    </button>
+</header>
+
+<div class="row">
+    <aside class="page_sidebar col-sm-4 site-sidebar">
+        <div>
+            <div>
+                <div class="widget widget widget--vendor-filter">
+                    <div id="filterModalCenter" tabindex="-1" role="dialog" aria-labelledby="filterModalCenterTitle" aria-hidden="true">
+                        <div id="mod_dialog" role="document">
+                            <div id="mod_content">
+                                <div class="modal-header" id="mod_header">
+                                    <h5 class="modal-title" id="exampleModalLongTitle">Filter</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div id="mod_body">
+                                    <form asp-page="Index" method="get" data-component="form" class="form form--vendor-filter">
+                                        <div class="form_fields">
+                                            @if (Model.CurrentSearch != null)
+                                            {
+                                                <input type="hidden" name="searchStr" value="@Model.CurrentSearch">
+                                            }
+                                            <div class="form_field form_field--radio">
+                                                <div class="field field--radio">
+                                                    <ul>
+                                                        <li>
+                                                            <label for="All Categories">
+                                                                <input id="All Categories" type="radio" name="category" value="">
+                                                                <span>All Categories</span>
+                                                            </label>
+                                                            <ul>
+                                                                @foreach (var item in Model.ListingCategory)
+                                                                {
+                                                                    <li>
+                                                                        <label for="@item.Text">
+                                                                            <input id="@item.Text" type="radio" name="category" value="@item.Value">
+                                                                            <span>@item.Text</span>
+                                                                        </label>
+                                                                    </li>
+                                                                }
+                                                            </ul>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="form_field form_field--select">
+                                                <label class="field_label form_label"><span>Tags</span></label>
+                                                <input id="multidatalist" list="tags-list" name="tags" class="form-control" multiple />
+                                                <datalist id="tags-list">
+                                                    <option selected value="">-</option>
+                                                    @foreach (var item in Model.TagsList)
+                                                    {
+                                                        <option value="@item">@item</option>
+                                                    }
+                                                </datalist>
+                                            </div>
+                                            <div class="form_field form_field--number-range">
+                                                <label class="field_label form_label">
+                                                    <span>Hourly Rate</span>
+                                                </label>
+                                                <div class="field field--number-range">
+                                                    <input type="number" name="hourlyRateMin" value="@Model.CurrentHourlyRateMin" id="filter-min" placeholder="Min" step="1" class="field field--number form-control">
+                                                    <input type="number" name="hourlyRateMax" value="@Model.CurrentHourlyRateMax" id="filter-max" placeholder="Max" step="1" class="field field--number form-control">
+                                                    <div>
+                                                        <div id="slider-range" data-min="@Model.minimumHourlyRate" data-max="@Model.maximumHourlyRate"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form_field form_field--select">
+                                                <label class="field_label form_label">
+                                                    <span>Availability</span>
+                                                </label>
+                                                <select name="availability" id="availabilityList" class="field field--select form-control" asp-items="@Model.ListingAvailability">
+                                                </select>
+                                            </div>
+                                            @if (Model.CurrentSort != null)
+                                            {
+                                                <input type="hidden" name="sortOrder" value="@Model.CurrentSort">
+                                            }
+                                        </div>
+                                        <div class="form_footer">
+                                            <button type="submit" class="form_button btn btn-lg btn-primary alt field field--submit w-100" onclick="updateRangeValues()">
+                                                <span>Filter</span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="page_content col-sm-8">
+        @if (Model.Listings.Count() > 0)
+        {
+            <div class="page_topbar">
+                <div class="result-count">Showing @Model.Listings.GetStartRange() - @Model.Listings.GetEndRange() results of @Model.Listings.GetTotalCount()</div>
+                <form asp-page="Index" class="form--pivot form form--vendor-sort" data-autosubmit="true" method="get" data-component="form">
+                    <div class="form_fields">
+                        @if (Model.CurrentSearch != null)
+                        {
+                            <input type="hidden" name="searchStr" value="@Model.CurrentSearch">
+                        }
+                        @if (Model.CurrentCategory != null)
+                        {
+                            <input type="hidden" name="category" value="@Model.CurrentCategory">
+                        }
+                        @if (Model.CurrentTags != null)
+                        {
+                            <input type="hidden" name="tags" value="@Model.CurrentTags">
+                        }
+                        @if (Model.CurrentHourlyRateMin != null)
+                        {
+                            <input type="hidden" name="hourlyRateMin" value="@Model.CurrentHourlyRateMin">
+                        }
+                        @if (Model.CurrentHourlyRateMax != null)
+                        {
+                            <input type="hidden" name="hourlyRateMax" value="@Model.CurrentHourlyRateMax">
+                        }
+                        @if (Model.CurrentAvailability != null)
+                        {
+                            <input type="hidden" name="availability" value="@Model.CurrentAvailability">
+                        }
+                        <div class="form_field form_field--select">
+                            <label class="field_label form_label">
+                                <span>Sort by</span>
+                            </label>
+                            <select id="sortList" name="sortOrder" required="required" class="field field--select form-control" onchange="this.form.submit()">
+                                <option name="@Model.CurrentSort" value="rating_desc">Rating ↓</option>
+                                <option name="@Model.CurrentSort" value="rating_asc">Rating ↑</option>
+                                <option name="@Model.CurrentSort" value="date_desc">Date ↓</option>
+                                <option name="@Model.CurrentSort" value="date_asc">Date ↑</option>
+                                <option name="@Model.CurrentSort" value="name_desc">Name ↓</option>
+                                <option name="@Model.CurrentSort" value="name_asc">Name ↑</option>
+                                <option name="@Model.CurrentSort" value="title_desc">Title ↓</option>
+                                <option name="@Model.CurrentSort" value="title_asc">Title ↑</option>
+                                <option name="@Model.CurrentSort" value="rate_desc">Hourly Rate ↓</option>
+                                <option name="@Model.CurrentSort" value="rate_asc">Hourly Rate ↑</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        }
+
+    <div class="listings block grid">
+
+        @if (this.User.IsInRole("Expert"))
+        {
+            <div class="admin-actions create">
+                <a asp-page="Create" class="btn btn-primary">Create New Listing</a>
+            </div>
+        }
+
+        @if (Model.Listings.Count() > 0)
+        {
+            foreach (var item in Model.Listings)
+            {
+                <div class="grid_item col-12">
+                    <article class="listing listing--view-block">
+                        <header class="listing_header">
+                            <div class="listing_image">
+                                <a asp-page="View" asp-route-id="@item.Id">
+                                    <img src="~/uploadfiles/profiles/@(item.Expert.User.ProfilePicture ?? "user-square.svg")" alt="@item.Title" loading="lazy">
+                                </a>
+                            </div>
+                        </header>
+                        <div class="listing_content">
+                            <h4 class="listing_title">
+                                <a asp-page="View" asp-route-id="@item.Id" class="link">@item.Title</a>
+                            </h4>
+                            <div class="listing_details listing_details--primary">
+                                <div class="listing_vendor">
+                                    <a asp-page="/Experts/View" asp-route-id="@item.Expert.User.UserName" class="link">@item.Expert.User.FirstName @item.Expert.User.LastName</a>
+                                </div>
+                                <div class="listing_categories listing_category">
+                                    @if (item.CategoryId != null)
+                                    {
+                                        <a asp-page="Index" asp-route-category="@item.ListingCategory.CategoryName" class="link">@item.ListingCategory.CategoryName</a>
+                                    }
+                                </div>
+                                @if (item.AverageRating != null)
+                                {
+                                    <div class="listing_rating rating">
+                                        <div class="rating_bar">
+                                            <span class="progressbar"></span>
+                                        </div>
+
+                                        <div class="rating_details">
+                                            <span class="rating_value">
+                                                <i class="fas fa-star"></i>
+                                                <span class="review_rating">
+                                                    @item.AverageRating
+                                                </span>
+                                            </span>
+                                            <span class="rating_count">(@item.CountAllRatings)</span>
+                                        </div>
+
+                                    </div>
+                                }
+                            </div>
+                            <div class="listing_attributes listing_attributes--secondary">
+                                <div class="listing_attribute listing_attribute--availability">
+                                    <i class="icon fas fa-fw fa-calendar-check"></i> @item.Availability
+                                </div>
+                            </div>
+                        </div>
+                        <footer class="listing_footer">
+                            <div class="block listing_attributes listing_attributes--primary">
+                                <div class="listing_attribute listing_attribute--hourly-rate">@item.HourlyRate€ / hr</div>
+                            </div>
+                            <div class="listing_actions listing_actions--primary">
+                                @if (SignInManager.IsSignedIn(User))
+                                {
+                                    if (!UserManager.GetUserId(User).Equals(item.ExpertId))
+                                    {
+                                        <a data-toggle="modal" data-target="#messageModal" onclick="setMessageValues('Reply to Listing', @item.Id, '@item.ExpertId');" title="Reply to Listing" class="listing_action listing_action--message">
+                                            <i class="icon fas fa-comment"></i>
+                                        </a>
+                                        if (Model.ExistingFavourite.Any(x => x.ListingId == item.Id))
+                                        {
+                                            foreach (var favourite in Model.ExistingFavourite)
+                                            {
+                                                if (item.Id.Equals(favourite.ListingId))
+                                                {
+                                                    <form method="post" asp-page-handler="DeleteFavourite" asp-route-id="@favourite.Id">
+                                                        <button class="listing_action listing_action--favorite" data-state="active" title="Remove from Favourites">
+                                                            <i class="icon fas fa-heart"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <form method="post" asp-page-handler="AddFavourite">
+                                                <input type="hidden" asp-for="Favourite.IdUser" value="@UserManager.GetUserId(User)" />
+                                                <input type="hidden" asp-for="Favourite.ListingId" value="@item.Id" />
+                                                <button class="listing_action listing_action--favorite" title="Add to Favourites">
+                                                    <i class="icon fas fa-heart"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    }
+                                }
+
+                                else
+                                {
+                                    <a asp-area="Identity" asp-page="/Account/Login" asp-route-ReturnUrl="/Listings" title="Reply to Listing" class="listing_action listing_action--message">
+                                        <i class="icon fas fa-comment"></i>
+                                    </a>
+                                    <a asp-area="Identity" asp-page="/Account/Login" asp-route-ReturnUrl="/Listings" title="Add to Favourites" class="listing_action listing_action--favorite">
+                                        <i class="icon fas fa-heart"></i>
+                                    </a>
+                                }
+                            </div>
+                        </footer>
+                    </article>
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        @if (UserManager.GetUserId(User).Equals(item.ExpertId))
+                        {
+                            <footer class="listing_footer_secondary">
+                                <div class="listing_attributes listing_attributes--primary"></div>
+                                <div class="listing_actions listing_actions--primary">
+                                    <form method="post" asp-page-handler="ChangeVisibility" asp-route-id="@item.Id">
+                                        <button class="listing_action listing_action--hide link">
+                                            @if (item.Visibility)
+                                            {
+                                                <i class="icon fas fa-eye-slash"></i>
+                                                <span>Hide</span>
+                                            }
+                                            else
+                                            {
+                                                <i class="icon fas fa-eye"></i>
+                                                <span>Unhide</span>
+                                            }
+                                        </button>
+
+                                    </form>
+                                    <a asp-page="Edit" asp-route-id="@item.Id" class="listing_action listing_action--edit link">
+                                        <i class="icon fas fa-edit"></i>
+                                        <span>Edit</span>
+                                    </a>
+                                    <button data-toggle="modal" data-target="#deleteModal" class="listing_action listing_action--delete link" onclick="setDeleteValues('Delete Listing', 'Are you sure you want to delete this listing?', '@item.Id');">
+                                        <i class="icon fas fa-times"></i>
+                                        <span>Delete</span>
+                                    </button>
+                                </div>
+                            </footer>
+                        }
+                    }
+                </div>
+            }
+
+            @if (Model.Listings.TotalPages > 1)
+            {
+                <nav class="navigation pagination" aria-label="Posts">
+                    <div class="nav-links">
+
+                        @if (Model.Listings.PageIndex != 1)
+                        {
+                            <a asp-page="Index"
+                               asp-route-searchStr="@Model.CurrentSearch"
+                               asp-route-category="@Model.CurrentCategory"
+                               asp-route-tags="@Model.CurrentTags"
+                               asp-route-hourlyRateMin="@Model.CurrentHourlyRateMin"
+                               asp-route-hourlyRateMax="@Model.CurrentHourlyRateMax"
+                               asp-route-availability="@Model.CurrentAvailability"
+                               asp-route-sortOrder="@Model.CurrentSort"
+                               asp-route-pageIndex="1"
+                               class="first">
+                                First
+                            </a>
+                        }
+
+                        @if (Model.Listings.HasPreviousPage)
+                        {
+                            <a asp-page="Index"
+                               asp-route-searchStr="@Model.CurrentSearch"
+                               asp-route-category="@Model.CurrentCategory"
+                               asp-route-tags="@Model.CurrentTags"
+                               asp-route-hourlyRateMin="@Model.CurrentHourlyRateMin"
+                               asp-route-hourlyRateMax="@Model.CurrentHourlyRateMax"
+                               asp-route-availability="@Model.CurrentAvailability"
+                               asp-route-sortOrder="@Model.CurrentSort"
+                               asp-route-pageIndex="@(Model.Listings.PageIndex - 1)"
+                               class="prev">
+                            </a>
+                        }
+
+
+                        @for (int i = Model.Listings.PageLeft; i <= Model.Listings.PageRight; i++)
+                        {
+                            if (i == Model.Listings.PageIndex)
+                            {
+                                <a onclick="return false" class="active">
+                                    @i
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-page="Index"
+                                    asp-route-searchStr="@Model.CurrentSearch"
+                                    asp-route-category="@Model.CurrentCategory"
+                                    asp-route-tags="@Model.CurrentTags"
+                                    asp-route-hourlyRateMin="@Model.CurrentHourlyRateMin"
+                                    asp-route-hourlyRateMax="@Model.CurrentHourlyRateMax"
+                                    asp-route-availability="@Model.CurrentAvailability"
+                                    asp-route-sortOrder="@Model.CurrentSort"
+                                    asp-route-pageIndex="@i">
+                                    @i
+                                </a>
+                            }
+                        }
+
+                        @if (Model.Listings.HasNextPage)
+                        {
+                            <a asp-page="Index"
+                               asp-route-searchStr="@Model.CurrentSearch"
+                               asp-route-category="@Model.CurrentCategory"
+                               asp-route-tags="@Model.CurrentTags"
+                               asp-route-hourlyRateMin="@Model.CurrentHourlyRateMin"
+                               asp-route-hourlyRateMax="@Model.CurrentHourlyRateMax"
+                               asp-route-availability="@Model.CurrentAvailability"
+                               asp-route-sortOrder="@Model.CurrentSort"
+                               asp-route-pageIndex="@(Model.Listings.PageIndex + 1)"
+                               class="next">
+                            </a>
+                        }
+
+                        @if (Model.Listings.PageIndex != Model.Listings.TotalPages)
+                        {
+                            <a asp-page="Index"
+                               asp-route-searchStr="@Model.CurrentSearch"
+                               asp-route-category="@Model.CurrentCategory"
+                               asp-route-tags="@Model.CurrentTags"
+                               asp-route-hourlyRateMin="@Model.CurrentHourlyRateMin"
+                               asp-route-hourlyRateMax="@Model.CurrentHourlyRateMax"
+                               asp-route-availability="@Model.CurrentAvailability"
+                               asp-route-sortOrder="@Model.CurrentSort"
+                               asp-route-pageIndex="@Model.Listings.TotalPages"
+                               class="last">
+                                Last
+                            </a>
+                        }
+                    </div>
+                </nav>
+                }
+            }
+
+            else
+            {
+                <h2>Nothing found</h2>
+                <p>Sorry, but nothing matched your search terms. Please try again with some different keywords.</p>
+            }
+        </div>
+
+    </div>
+</div>
+
+<partial name="_Message" model="Model.Message" />
+
+<partial name="_DeleteModal" />
+
+@if (Model.CurrentSort != null)
+{
+    <script>
+        document.getElementById('sortList').value = '@Model.CurrentSort';
+    </script>
+}
+
+@if (Model.CurrentCategory != null)
+{
+    <script>
+        document.getElementById('@Model.CurrentCategory').checked = true;
+    </script>
+}
+
+else
+{
+    <script>
+        document.getElementById('All Categories').checked = true;
+    </script>
+}
+
+@if (Model.CurrentTags != null)
+{
+    <script>
+        document.getElementById('multidatalist').value = '@Model.CurrentTags';
+    </script>
+}
+
+@if (Model.CurrentHourlyRateMin != null)
+{
+    <script>
+        document.getElementById('filter-min').value = '@Model.CurrentHourlyRateMin';
+    </script>
+}
+
+@if (Model.CurrentHourlyRateMax != null)
+{
+    <script>
+        document.getElementById('filter-max').value = '@Model.CurrentHourlyRateMax';
+    </script>
+}
+
+@if (Model.CurrentAvailability != null)
+{
+    <script>
+        document.getElementById('availabilityList').value = '@Model.CurrentAvailability';
+    </script>
+}
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,219 @@
+﻿@page
+@model Thesis.Areas.Identity.Pages.Account.Manage.FavouriteCulturalActivitiesModel
+@{
+    ViewData["Title"] = "Favourite Cultural Activities";
+    ViewData["ActivePage"] = ManageNavPages.FavouriteCulturalActivities;
+}
+
+<div class="page-manage-content">
+    <h1 class="page_title">@ViewData["Title"]</h1>
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
+
+    @if (Model.FavouriteCulturalActivities.Count() > 0)
+    {
+        <div class="events block grid">
+            <div class="page_topbar">
+                <div class="result-count">Showing @Model.FavouriteCulturalActivities.GetStartRange() - @Model.FavouriteCulturalActivities.GetEndRange() results of @Model.FavouriteCulturalActivities.GetTotalCount()</div>
+                <form asp-page="FavouriteCulturalActivities" class="form--pivot form form--vendor-sort" data-autosubmit="true" method="get" data-component="form">
+                    <div class="form_fields">
+                        <div class="form_field form_field--select">
+                            <label class="field_label form_label">
+                                <span>Sort by</span>
+                            </label>
+                            <select id="sortList" name="sortOrder" required="required" class="field field--select form-control" onchange="this.form.submit()">
+                                <option name="@Model.CurrentSort" value="rating_desc">Rating ↓</option>
+                                <option name="@Model.CurrentSort" value="rating_asc">Rating ↑</option>
+                                <option name="@Model.CurrentSort" value="dateStart_desc">Date Start ↓</option>
+                                <option name="@Model.CurrentSort" value="dateStart_asc">Date Start ↑</option>
+                                <option name="@Model.CurrentSort" value="dateEnd_desc">Date End ↓</option>
+                                <option name="@Model.CurrentSort" value="dateEnd_asc">Date End ↑</option>
+                                <option name="@Model.CurrentSort" value="title_desc">Title ↓</option>
+                                <option name="@Model.CurrentSort" value="title_asc">Title ↑</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="row">
+                @foreach (var item in Model.FavouriteCulturalActivities)
+                {
+                    <div class="grid_item col-sm-6">
+                        <article class="event--view-block">
+                            @if (item.CulturalActivity.Images != null)
+                            {
+                                <header class="event_header">
+                                    <div class="event_image">
+                                        <a asp-page="/CulturalActivities/View" asp-route-id="@item.CulturalActivity.Id">
+                                            @if (item.CulturalActivity.Images.Contains(","))
+                                            {
+                                                string[] images = item.CulturalActivity.Images.Split(',');
+                                                <img src="~/uploadfiles/culturalActivities/@images.First()" alt="@item.CulturalActivity.Title" loading="lazy">
+                                            }
+                                            else
+                                            {
+                                                <img src="~/uploadfiles/culturalActivities/@item.CulturalActivity.Images" alt="@item.CulturalActivity.Title" loading="lazy">
+                                            }
+                                        </a>
+                                    </div>
+                                </header>
+                            }
+                            <div class="event_content">
+                                <div class="event_primary">
+                                    <time class="event_attribute event_attribute--date">
+                                        <i class="fas fa-fw fa-calendar"></i>
+                                        @{
+                                            TimeSpan span = item.CulturalActivity.DateEnd.Value.Subtract(item.CulturalActivity.DateStart.Value);
+                                        }
+                                        @if (span.Days > 0)
+                                        {
+                                            <span>@item.CulturalActivity.DateStart.Value.ToShortDateString() - @item.CulturalActivity.DateEnd.Value.ToShortDateString()</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@item.CulturalActivity.DateStart.Value.ToShortDateString()</span>
+                                        }
+                                    </time>
+                                    @if (item.CulturalActivity.AverageRating != null)
+                                    {
+                                        <div class="event_rating rating rating--large">
+                                            <div class="rating_bar">
+                                                <span class="progressbar"></span>
+                                            </div>
+                                            <div class="rating_details">
+                                                <span class="rating_value">
+                                                    <i class="fas fa-star"></i>
+                                                    <span class="review_rating">
+                                                        @item.CulturalActivity.AverageRating
+                                                    </span>
+                                                </span>
+                                                <span class="rating_count">(@item.CulturalActivity.CountAllRatings)</span>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                <h4 class="event_title">
+                                    <a asp-page="/CulturalActivities/View" asp-route-id="@item.CulturalActivity.Id">@item.CulturalActivity.Title</a>
+                                </h4>
+                                <form method="post" asp-page-handler="DeleteFavourite" asp-route-id="@item.Id">
+                                    <button class="listing_action listing_action--favorite" data-state="active" title="Remove from Favourites">
+                                        <i class="icon fas fa-heart"></i>
+                                    </button>
+                                </form>
+                                <div class="event-category meta">
+                                    @if (item.CulturalActivity.CategoryId != null)
+                                    {
+                                        <a asp-page="/CulturalActivities/Index" asp-route-category="@item.CulturalActivity.CulturalActivityMainCategory.CategoryName">@item.CulturalActivity.CulturalActivityMainCategory.CategoryName</a>
+                                        @if (item.CulturalActivity.SubcategoryId != null)
+                                        {
+                                            <span> | </span>
+                                            <a asp-page="/CulturalActivities/Index" asp-route-category="@item.CulturalActivity.CulturalActivityMainCategory.CategoryName" asp-route-subcategory="@item.CulturalActivity.CulturalActivitySubcategory.CategoryName">@item.CulturalActivity.CulturalActivitySubcategory.CategoryName</a>
+                                        }
+                                    }
+                                </div>
+                                <div class="event_attribute event_attribute--place">
+                                    <i class="fas fa-fw fa-location-pin"></i>
+                                    <span>@item.CulturalActivity.Place</span>
+                                </div>
+                            </div>
+                        </article>
+                        @if (this.User.IsInRole("Admin"))
+                        {
+                            <footer class="listing_footer_secondary event_footer_secondary">
+                                <div class="listing_attributes listing_attributes--primary"></div>
+                                <div class="listing_actions listing_actions--primary">
+                                    <a asp-page="/CulturalActivities/Edit" asp-route-id="@item.CulturalActivity.Id" asp-route-category="@item.CulturalActivity.CategoryId" class="listing_action listing_action--edit link">
+                                        <i class="icon fas fa-edit"></i>
+                                        <span>Edit</span>
+                                    </a>
+                                    <button data-toggle="modal" data-target="#deleteModal" class="listing_action listing_action--delete link" onclick="setDeleteValues('Delete Cultural Activity', 'Are you sure you want to delete this cultural activity?', '@item.CulturalActivity.Id');">
+                                        <i class="icon fas fa-times"></i>
+                                        <span>Delete</span>
+                                    </button>
+                                </div>
+                            </footer>
+                        }
+                    </div>
+                }
+            </div>
+
+            @if (Model.FavouriteCulturalActivities.TotalPages > 1)
+            {
+                <nav class="navigation pagination" aria-label="Posts">
+                    <div class="nav-links">
+
+                        @if (Model.FavouriteCulturalActivities.PageIndex != 1)
+                        {
+                            <a asp-page="FavouriteCulturalActivities"
+                               asp-route-sortOrder="@Model.CurrentSort"
+                               asp-route-pageIndex="1">
+                                First
+                            </a>
+                        }
+
+                        @if (Model.FavouriteCulturalActivities.HasPreviousPage)
+                        {
+                            <a asp-page="FavouriteCulturalActivities"
+                               asp-route-sortOrder="@Model.CurrentSort"
+                               asp-route-pageIndex="@(Model.FavouriteCulturalActivities.PageIndex - 1)"
+                               class="prev">
+                            </a>
+                        }
+
+                        @for (int i = Model.FavouriteCulturalActivities.PageLeft; i <= Model.FavouriteCulturalActivities.PageRight; i++)
+                        {
+                            if (i == Model.FavouriteCulturalActivities.PageIndex)
+                            {
+                                <a onclick="return false" class="active">
+                                    @i
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-page="FavouriteCulturalActivities"
+                                   asp-route-sortOrder="@Model.CurrentSort"
+                                   asp-route-pageIndex="@i">
+                                    @i
+                                </a>
+                            }
+                        }
+
+                        @if (Model.FavouriteCulturalActivities.HasNextPage)
+                        {
+                            <a asp-page="FavouriteCulturalActivities"
+                               asp-route-sortOrder="@Model.CurrentSort"
+                               asp-route-pageIndex="@(Model.FavouriteCulturalActivities.PageIndex + 1)"
+                               class="next">
+                            </a>
+                        }
+
+                        @if (Model.FavouriteCulturalActivities.PageIndex != Model.FavouriteCulturalActivities.TotalPages)
+                        {
+                            <a asp-page="FavouriteCulturalActivities"
+                               asp-route-sortOrder="@Model.CurrentSort"
+                               asp-route-pageIndex="@Model.FavouriteCulturalActivities.TotalPages">
+                                Last
+                            </a>
+                        }
+
+                    </div>
+                </nav>
+            }
+        </div>
+    }
+
+    else
+    {
+        <h2>Nothing found</h2>
+        <p>Head over to <a asp-page="/CulturalActivities/Index" class="manage-link">Cultural Activities</a> and click the heart icon to add a cultural activity to your favourites list!</p>
+    }
+
+</div>
+
+<partial name="_DeleteModal" />
+
+@if (Model.CurrentSort != null)
+{
+    <script>
+        document.getElementById('sortList').value = '@Model.CurrentSort';
+    </script>
+}

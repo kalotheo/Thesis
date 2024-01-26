@@ -1,0 +1,82 @@
+﻿@page
+@model Thesis.Pages.Requests.CreateModel
+@using Thesis.Areas.Identity.Pages.Account.Manage
+@{
+    ViewData["Title"] = "Create New Request";
+    ViewData["ActivePage"] = ManageNavPages.CreateRequest;
+}
+
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+<h1 class="page_title">@ViewData["Title"]</h1>
+<form method="post" enctype="multipart/form-data" class="form form--listing-submit">
+    <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+    <input type="hidden" asp-for="request.UserId" value="@Model.UserManager.Id" />
+    <div class="form_fields">
+
+        <div class="form_field form_field--attachment-upload">
+            <label asp-for="FileUpload.Files" class="field_label form_label"></label>
+            <div class="field field--attachment-upload">
+                <div class="input-images-1"></div>
+            </div>
+        </div>
+
+        <div class="form_field form_field--text">
+            <label asp-for="request.Title" class="field_label form_label"></label>
+            <input asp-for="request.Title" class="form-control" />
+            <span asp-validation-for="request.Title" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--number">
+            <label asp-for="request.Salary" class="field_label form_label"></label>
+            <input asp-for="request.Salary" min="1" class="form-control" type="number" />
+            <span asp-validation-for="request.Salary" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--dateStart">
+            <label asp-for="request.DateStart" class="field_label form_label"></label>
+            <input asp-for="request.DateStart" id="start" class="form-control" />
+            <span asp-validation-for="request.DateStart" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--dateEnd">
+            <label asp-for="request.DateEnd" class="field_label form_label"></label>
+            <input asp-for="request.DateEnd" id="end" class="form-control" />
+            <span asp-validation-for="request.DateEnd" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--select">
+            <label asp-for="request.TimeRange" class="field_label form_label"></label>
+            <select asp-for="request.TimeRange" class="form-control" asp-items="@Model.RequestTimeRange">
+            </select>
+            <span asp-validation-for="request.TimeRange" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--textarea">
+            <label asp-for="request.Description" class="field_label form_label"></label>
+            <ejs-richtexteditor id="descriptionRTE" ejs-for="request.Description">
+            </ejs-richtexteditor>
+            <span asp-validation-for="request.Description" id="descriptionMsg" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--tags">
+            <label asp-for="request.Tags" class="field_label form_label"></label>
+            <input id="multidatalist" list="tags-list" asp-for="request.Tags" class="form-control" multiple />
+            <datalist id="tags-list">
+                @foreach (var item in Model.TagsList)
+                {
+                    <option value="@item">@item</option>
+                }
+            </datalist>
+            <span asp-validation-for="request.Tags" id="tagsMsg" class="text-danger"></span>
+        </div>
+
+        <div class="form_footer">
+            <input type="submit" value="Submit Request" class="btn btn-primary" />
+        </div>
+
+    </div>
+</form>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

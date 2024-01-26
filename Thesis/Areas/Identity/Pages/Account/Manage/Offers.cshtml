@@ -1,0 +1,306 @@
+﻿@page
+@model Thesis.Areas.Identity.Pages.Account.Manage.OffersModel
+@{
+    ViewData["Title"] = "Offers";
+    ViewData["ActivePage"] = ManageNavPages.Offers;
+    ViewData["offerPageHandler"] = "EditOffer";
+}
+
+<div class="page-manage-content">
+    <h1 class="page_title">@ViewData["Title"]</h1>
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
+
+    <ul class="nav nav-tabs nav-justified" id="ex2">
+
+        @if (Model.OffersForExpert.Count() > 0)
+        {
+            <li class="nav-item">
+                <a class="nav-link" id="menu-offersforexpert" href="#offersforexpert">
+                    Offers for you
+                </a>
+            </li>
+        }
+
+        @if (this.User.IsInRole("Expert"))
+        {
+            if (Model.OffersByExpert.Count() > 0)
+            {
+                <li class="nav-item">
+                    <a class="nav-link" id="menu-offersbyexpert" href="#offersbyexpert">
+                        Offers by you
+                    </a>
+                </li>
+            }
+        }
+
+    </ul>
+
+    @if (this.User.IsInRole("Expert"))
+    {
+        if (Model.OffersForExpert.Count() == 0 && Model.OffersByExpert.Count() == 0)
+        {
+            <h2>Nothing found</h2>
+            <p>You haven't made or got any offers yet!</p>
+        }
+    }
+    else
+    {
+        if (Model.OffersForExpert.Count() == 0)
+        {
+            <h2>Nothing found</h2>
+            <p>You haven't got any offers yet!</p>
+        }
+    }
+
+    <div class="tab-content">
+
+        @if (Model.OffersForExpert.Count() > 0)
+        {
+            <div id="offersforexpert" class="tab-pane fade">
+                <div class="offers block grid">
+                    <div class="row">
+                        @foreach (var item in Model.OffersForExpert)
+                        {
+                            <div class="grid_item col-12">
+                                <div class="offer offer--view-block">
+                                    <header class="offer_header">
+                                        <div class="offer_image">
+                                            <a asp-page="/Experts/View" asp-route-id="@item.Expert.User.UserName">
+                                                <img src="~/uploadfiles/profiles/@(item.Expert.User.ProfilePicture ?? "user-square.svg")" class="avatar avatar-150 photo" height="150" width="150" alt="@item.Expert.User.FirstName @item.Expert.User.LastName" loading="lazy">
+                                            </a>
+                                        </div>
+                                        <div class="offer_summary">
+                                            <h5 class="offer_bidder">
+                                                <a asp-page="/Experts/View" asp-route-id="@item.Expert.User.UserName" class="link">
+                                                    @item.Expert.User.FirstName @item.Expert.User.LastName
+                                                </a>
+                                            </h5>
+                                            <div class="offer_details">
+                                                <time class="offer_created-date offer_date meta" datetime="@item.OfferDate">@item.OfferDate.ToShortDateString()</time>
+                                            </div>
+                                        </div>
+                                    </header>
+                                    <div class="offer_content">
+                                        <div class="offer_text">
+                                            <p class="longtext">@item.OfferText</p>
+                                        </div>
+                                        <a asp-page="/Requests/View" asp-route-id="@item.RequestId" class="offer_request link">
+                                            <i class="icon fas fa-share"></i>
+                                            <span>@item.Request.Title</span>
+                                        </a>
+                                    </div>
+                                    <footer class="offer_footer">
+                                        <div class="offer_attributes offer_attributes--primary"></div>
+                                        <div class="offer_actions offer_actions--primary">
+                                            <a asp-page="/Experts/View" asp-route-id="@item.Expert.User.UserName" class="offer_action offer_action--vendor link">
+                                                <i class="icon fas fa-eye"></i>
+                                                <span>View Profile</span>
+                                            </a>
+
+                                        </div>
+                                    </footer>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    @if (Model.OffersForExpert.TotalPages > 1)
+                    {
+                        <nav class="navigation pagination" aria-label="Posts">
+                            <div class="nav-links">
+
+                                @if (Model.OffersForExpert.PageIndex != 1)
+                                {
+                                    <a asp-page="Offers"
+                                       asp-fragment="offersforexpert"
+                                       asp-route-pageIndexForExpert="1">
+                                        First
+                                    </a>
+                                }
+
+                                @if (Model.OffersForExpert.HasPreviousPage)
+                                {
+                                    <a asp-page="Offers"
+                                       asp-fragment="offersforexpert"
+                                       asp-route-pageIndexForExpert="@(Model.OffersForExpert.PageIndex - 1)"
+                                       class="prev">
+                                    </a>
+                                }
+
+                                @for (int i = Model.OffersForExpert.PageLeft; i <= Model.OffersForExpert.PageRight; i++)
+                                {
+                                    if (i == Model.OffersForExpert.PageIndex)
+                                    {
+                                        <a onclick="return false" class="active">
+                                            @i
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-page="Offers"
+                                           asp-fragment="offersforexpert"
+                                           asp-route-pageIndexForExpert="@i">
+                                            @i
+                                        </a>
+                                    }
+                                }
+
+                                @if (Model.OffersForExpert.HasNextPage)
+                                {
+                                    <a asp-page="Offers"
+                                       asp-fragment="offersforexpert"
+                                       asp-route-pageIndexForExpert="@(Model.OffersForExpert.PageIndex + 1)"
+                                       class="next">
+                                    </a>
+                                }
+
+                                @if (Model.OffersForExpert.PageIndex != Model.OffersForExpert.TotalPages)
+                                {
+                                    <a asp-page="Offers"
+                                       asp-fragment="offersforexpert"
+                                       asp-route-pageIndexForExpert="@Model.OffersForExpert.TotalPages">
+                                        Last
+                                    </a>
+                                }
+                            </div>
+                        </nav>
+                    }
+                    </div>
+            </div>
+        }
+
+        @if (this.User.IsInRole("Expert"))
+        {
+            if (Model.OffersByExpert.Count() > 0)
+            {
+                <div id="offersbyexpert" class="tab-pane fade">
+                    <div class="offers block grid">
+                        <div class="row">
+                            @foreach (var item in Model.OffersByExpert)
+                            {
+                                <div class="grid_item col-12">
+                                    <div class="offer offer--view-block">
+                                        <header class="offer_header">
+                                            <div class="offer_image">
+                                                <a asp-page="/Experts/View" asp-route-id="@item.Expert.User.UserName">
+                                                    <img src="~/uploadfiles/profiles/@(item.Expert.User.ProfilePicture ?? "user-square.svg")" class="avatar avatar-150 photo" height="150" width="150" alt="@item.Expert.User.FirstName @item.Expert.User.LastName" loading="lazy">
+                                                </a>
+                                            </div>
+                                            <div class="offer_summary">
+                                                <h5 class="offer_bidder">
+                                                    <a asp-page="/Experts/View" asp-route-id="@item.Expert.User.UserName" class="link">
+                                                        @item.Expert.User.FirstName @item.Expert.User.LastName
+                                                    </a>
+                                                </h5>
+                                                <div class="offer_details">
+                                                    <time class="offer_created-date offer_date meta" datetime="@item.OfferDate">@item.OfferDate.ToShortDateString()</time>
+                                                </div>
+                                            </div>
+                                        </header>
+                                        <div class="offer_content">
+                                            <div class="offer_text">
+                                                <p class="longtext">@item.OfferText</p>
+                                            </div>
+                                            <a asp-page="/Requests/View" asp-route-id="@item.RequestId" class="offer_request link">
+                                                <i class="icon fas fa-share"></i>
+                                                <span>@item.Request.Title</span>
+                                            </a>
+                                        </div>
+                                        <footer class="offer_footer">
+                                            <div class="offer_attributes offer_attributes--primary"></div>
+                                            <div class="offer_actions offer_actions--primary">
+                                                <a asp-page="/Experts/View" asp-route-id="@item.Expert.User.UserName" class="offer_action offer_action--vendor link">
+                                                    <i class="icon fas fa-eye"></i>
+                                                    <span>View Profile</span>
+                                                </a>
+                                                <button class="offer_action offer_action--edit link" data-toggle="modal" data-target="#offerModal" onclick="setOfferValues('Edit Offer', @item.RequestId, @item.Id, '@Html.Encode(item.OfferText)');">
+                                                    <i class="icon fas fa-edit"></i>
+                                                    <span>Edit Offer</span>
+                                                </button>
+                                                <form method="post" asp-page-handler="DeleteOffer" asp-route-id="@item.Id">
+                                                    <button class="offer_action offer_action--delete link">
+                                                        <i class="icon fas fa-times"></i>
+                                                        <span>Delete Offer</span>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </footer>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        @if (Model.OffersByExpert.TotalPages > 1)
+                        {
+                            <nav class="navigation pagination" aria-label="Posts">
+                                <div class="nav-links">
+
+                                    @if (Model.OffersByExpert.PageIndex != 1)
+                                    {
+                                        <a asp-page="Offers"
+                                           asp-fragment="offersbyexpert"
+                                           asp-route-pageIndexByExpert="1"
+                                           class="first">
+                                            First
+                                        </a>
+                                    }
+
+                                    @if (Model.OffersByExpert.HasPreviousPage)
+                                    {
+                                        <a asp-page="Offers"
+                                           asp-fragment="offersbyexpert"
+                                           asp-route-pageIndexByExpert="@(Model.OffersByExpert.PageIndex - 1)"
+                                           class="prev">
+                                        </a>
+                                    }
+
+                                    @for (int i = Model.OffersByExpert.PageLeft; i <= Model.OffersByExpert.PageRight; i++)
+                                    {
+                                        if (i == Model.OffersByExpert.PageIndex)
+                                        {
+                                            <a onclick="return false" class="active">
+                                                @i
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-page="Offers"
+                                               asp-fragment="offersbyexpert"
+                                               asp-route-pageIndexByExpert="@i">
+                                                @i
+                                            </a>
+                                        }
+                                    }
+
+                                    @if (Model.OffersByExpert.HasNextPage)
+                                    {
+                                        <a asp-page="Offers"
+                                           asp-fragment="offersbyexpert"
+                                           asp-route-pageIndexByExpert="@(Model.OffersByExpert.PageIndex + 1)"
+                                           class="next">
+                                        </a>
+                                    }
+
+                                    @if (Model.OffersByExpert.PageIndex != Model.OffersByExpert.TotalPages)
+                                    {
+                                        <a asp-page="Offers"
+                                           asp-fragment="offersbyexpert"
+                                           asp-route-pageIndexByExpert="@Model.OffersByExpert.TotalPages"
+                                           class="last">
+                                            Last
+                                        </a>
+                                    }
+
+                                </div>
+                            </nav>
+                        }
+
+                        </div>
+                </div>
+            }
+            <partial name="_Offer" model="Model.Offer" view-data="ViewData" />
+        }
+
+    </div>
+
+</div>

@@ -1,0 +1,59 @@
+﻿@model ReviewListing
+@using Microsoft.AspNetCore.Identity
+@using Thesis.Model
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@{
+    string reviewPageHandler = "";
+    if (ViewData["reviewPageHandler"] != null)
+    {
+        reviewPageHandler = ViewData["reviewPageHandler"].ToString();
+    }
+}
+
+@if (SignInManager.IsSignedIn(User))
+{
+
+    <!-- Review Modal -->
+
+    <div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reviewModalTitle"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="reviewForm" method="post" asp-page-handler="@reviewPageHandler">
+                    <div class="modal-body">
+                        <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+                        <input type="hidden" asp-for= "IdReviewer" value="@UserManager.GetUserId(User)" />
+                        <input type="hidden" asp-for="ListingId" id="rewiewListingId" />
+                        <input type="hidden" asp-for="Id" id="reviewId" />
+                        <div class="form-group">
+                            <label asp-for="Rating" class="field_label form_label"></label>
+                            <div class="rating_stars">
+                                <input type="hidden" id="reviewRating" />
+                                <input type="radio" value="5" id="5" asp-for="Rating"><label for="5">★</label>
+                                <input type="radio" value="4" id="4" asp-for="Rating"><label for="4">★</label>
+                                <input type="radio" value="3" id="3" asp-for="Rating"><label for="3">★</label>
+                                <input type="radio" value="2" id="2" asp-for="Rating"><label for="2">★</label>
+                                <input type="radio" value="1" id="1" asp-for="Rating"><label for="1">★</label>
+                            </div>
+                            <span id="reviewRatingMsg" asp-validation-for="Rating" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="ReviewMessage" class="field_label form_label"></label>
+                            <textarea class="form-control textarea-min-height" asp-for="ReviewMessage" id="reviewMessage"></textarea>
+                            <span asp-validation-for="ReviewMessage" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" value="Send" class="btn btn-lg btn-primary">Submit Review</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

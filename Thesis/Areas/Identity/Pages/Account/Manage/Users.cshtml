@@ -1,0 +1,199 @@
+﻿@page
+@model Thesis.Areas.Identity.Pages.Account.Manage.UsersModel
+@{
+    ViewData["Title"] = "Users";
+    ViewData["ActivePage"] = ManageNavPages.Users;
+}
+
+<div class="page-manage-content">
+    <h1 class="page_title">@ViewData["Title"]</h1>
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
+
+    <header class="page_header">
+        <form asp-page="Users" class="form--wide form--primary block form form--vendor-search" method="get" data-component="form">
+            <div class="form_fields">
+                <div class="form_field form_field--search">
+                    <input type="search" name="searchStr" value="@Model.CurrentSearch" placeholder="Keywords" maxlength="256" class="field field--search">
+                    @if (Model.CurrentSort != null)
+                    {
+                        <input type="hidden" name="sortOrder" value="@Model.CurrentSort">
+                    }
+                </div>
+            </div>
+            <div class="form_footer">
+                <button type="submit" class="form_button btn btn-primary btn-lg alt field field--submit">
+                    <span>Search</span>
+                </button>
+            </div>
+        </form>
+    </header>
+
+    @if (Model.Users.Count() > 0)
+    {
+        <div class="page_topbar">
+            <div class="result-count">Showing @Model.Users.GetStartRange() - @Model.Users.GetEndRange() results of @Model.Users.GetTotalCount()</div>
+            <form asp-page="Users" class="form--pivot form form--vendor-sort" data-autosubmit="true" method="get" data-component="form">
+                <div class="form_fields">
+                    @if (Model.CurrentSearch != null)
+                    {
+                        <input type="hidden" name="searchStr" value="@Model.CurrentSearch">
+                    }
+                    <div class="form_field form_field--select">
+                        <label class="field_label form_label">
+                            <span>Sort by</span>
+                        </label>
+                        <select id="sortList" name="sortOrder" data-style="inline" required="required" data-component="select" class="field field--select form-control" onchange="this.form.submit()">
+                            <option name="@Model.CurrentSort" value="username_desc">Username ↓</option>
+                            <option name="@Model.CurrentSort" value="username_asc">Username ↑</option>
+                            <option name="@Model.CurrentSort" value="firstName_desc">First Name ↓</option>
+                            <option name="@Model.CurrentSort" value="firstName_asc">First Name ↑</option>
+                            <option name="@Model.CurrentSort" value="lastName_desc">Last Name ↓</option>
+                            <option name="@Model.CurrentSort" value="lastName_asc">Last Name ↑</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <table class="w-100 mb-4 table table-striped border">
+            <tbody>
+                <tr>
+                    <th>
+                        Username
+                    </th>
+
+                    <th>
+                        First Name
+                    </th>
+
+                    <th>
+                        Last Name
+                    </th>
+
+                    <th>
+                        Email
+                    </th>
+
+                    <th>
+                        Action
+                    </th>
+                </tr>
+                @foreach (var item in Model.Users)
+                {
+
+                    <tr>
+                        <td>
+                            @item.UserName
+                        </td>
+
+                        <td>
+                            @item.FirstName
+                        </td>
+
+                        <td>
+                            @item.LastName
+                        </td>
+
+                        <td>
+                            <a href="mailto:@item.Email" class="link">
+                                @item.Email
+                            </a>
+                        </td>
+
+                        <td>
+                            <a asp-page="UserRoles" asp-route-id="@item.UserName" class="listing_action listing_action--edit link">
+                                <i class="icon fas fa-edit"></i>
+                                <span>Roles</span>
+                            </a>
+                        </td>
+                    </tr>
+
+                }
+            </tbody>
+        </table>
+
+        @if (Model.Users.TotalPages > 1)
+        {
+            <nav class="navigation pagination" aria-label="Posts">
+                <div class="nav-links">
+
+                    @if (Model.Users.PageIndex != 1)
+                    {
+                        <a asp-page="Users"
+                           asp-route-searchStr="@Model.CurrentSearch"
+                           asp-route-sortOrder="@Model.CurrentSort"
+                           asp-route-pageIndex="1"
+                           class="first">
+                            First
+                        </a>
+                    }
+
+                    @if (Model.Users.HasPreviousPage)
+                    {
+                        <a asp-page="Users"
+                           asp-route-searchStr="@Model.CurrentSearch"
+                           asp-route-sortOrder="@Model.CurrentSort"
+                           asp-route-pageIndex="@(Model.Users.PageIndex - 1)"
+                           class="prev">
+                        </a>
+                    }
+
+                    @for (int i = Model.Users.PageLeft; i <= Model.Users.PageRight; i++)
+                    {
+                        if (i == Model.Users.PageIndex)
+                        {
+                            <a onclick="return false" class="active">
+                                @i
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-page="Users"
+                               asp-route-searchStr="@Model.CurrentSearch"
+                               asp-route-sortOrder="@Model.CurrentSort"
+                               asp-route-pageIndex="@i">
+                                @i
+                            </a>
+                        }
+                    }
+
+                    @if (Model.Users.HasNextPage)
+                    {
+                        <a asp-page="Users"
+                           asp-route-searchStr="@Model.CurrentSearch"
+                           asp-route-sortOrder="@Model.CurrentSort"
+                           asp-route-pageIndex="@(Model.Users.PageIndex + 1)"
+                           class="next">
+                        </a>
+                    }
+
+                    @if (Model.Users.PageIndex != Model.Users.TotalPages)
+                    {
+                        <a asp-page="Index"
+                           asp-route-searchStr="@Model.CurrentSearch"
+                           asp-route-sortOrder="@Model.CurrentSort"
+                           asp-route-pageIndex="@Model.Users.TotalPages"
+                           class="last">
+                            Last
+                        </a>
+                    }
+
+                </div>
+            </nav>
+        }
+    }
+
+    else
+    {
+        <h2>Nothing found</h2>
+        <p>Sorry, but nothing matched your search terms. Please try again with some different keywords.</p>
+    }
+
+</div>
+
+@if (Model.CurrentSort != null)
+{
+    <script>
+        document.getElementById('sortList').value = '@Model.CurrentSort';
+    </script>
+}

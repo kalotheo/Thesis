@@ -1,0 +1,169 @@
+﻿@page
+@model Thesis.Areas.Identity.Pages.Account.Manage.ReviewsCulturalActivitiesModel
+@{
+    ViewData["Title"] = "Reviews Cultural Activities";
+    ViewData["ActivePage"] = ManageNavPages.ReviewsCulturalActivities;
+    ViewData["reviewPageHandler"] = "EditReview";
+}
+
+<div class="page-manage-content">
+    <h1 class="page_title">@ViewData["Title"]</h1>
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
+    @if (Model.Reviews.Count() > 0)
+    {
+
+        <div class="page_topbar">
+            <div class="result-count">Showing @Model.Reviews.GetStartRange() - @Model.Reviews.GetEndRange() results of @Model.Reviews.GetTotalCount()</div>
+            <form asp-page="ReviewsCulturalActivities" class="form--pivot form form--vendor-sort" data-autosubmit="true" method="get" data-component="form">
+                <div class="form_fields">
+                    <div class="form_field form_field--select">
+                        <label class="field_label form_label">
+                            <span>Sort by</span>
+                        </label>
+                        <select id="sortList" name="sortOrder" required="required" class="field field--select form-control" onchange="this.form.submit()">
+                            <option name="@Model.CurrentSort" value="date_desc">Date ↓</option>
+                            <option name="@Model.CurrentSort" value="date_asc">Date ↑</option>
+                            <option name="@Model.CurrentSort" value="rating_desc">Rating ↓</option>
+                            <option name="@Model.CurrentSort" value="rating_asc">Rating ↑</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="reviews block grid">
+            @foreach (var item in Model.Reviews)
+            {
+                <div class="grid_item">
+                    <div class="review review--view-block">
+                        <header class="review_header">
+                            @if (item.CulturalActivity.Images != null)
+                            {
+                                List<string> images = item.CulturalActivity.Images.Split(',').ToList();
+                                <div class="review_image">
+                                    <img src="~/uploadfiles/culturalActivities/@images.First()" class="manage-review-image" alt="@item.CulturalActivity.Title" loading="lazy">
+                                </div>
+                            }
+                            <div class="review_summary">
+                                <div class="review_author">
+                                    <a asp-page="/CulturalActivities/View" asp-route-id="@item.CulturalActivityId" class="review_action review_action--listing link">@item.CulturalActivity.Title</a>
+                                </div>
+                                <div class="review_details">
+                                    <time class="review_created-date review_date meta" datetime="@item.ReviewDate">@item.ReviewDate.ToShortDateString()</time>
+                                    <div class="rating">
+                                        <div class="rating_bar">
+                                            <span class="progressbar"></span>
+                                        </div>
+                                        <div class="rating_details">
+                                            <span class="rating_value">
+                                                <i class="fas fa-star"></i>
+                                                <span class="review_rating">@item.Rating</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </header>
+                        <div class="review_content">
+                            <div class="review_text">
+                                <p class="longtext">@item.ReviewMessage</p>
+                            </div>
+                        </div>
+                        <footer class="review_footer">
+                            <div class="review_attributes review_attributes--primary"></div>
+                            <div class="review_actions review_actions--primary">
+                                <a asp-page="/CulturalActivities/View" asp-route-id="@item.CulturalActivityId" class="review_action review_action--listing link">
+                                    <i class="icon fas fa-eye"></i>
+                                    <span>View Cultural Activity</span>
+                                </a>
+                                <button class="review_action review_action--edit link" data-toggle="modal" data-target="#reviewModal" onclick="setReviewValues('Edit Review', @item.CulturalActivityId, @item.Id, @item.Rating, '@Html.Encode(item.ReviewMessage)');">
+                                    <i class="icon fas fa-edit"></i>
+                                    <span>Edit Review</span>
+                                </button>
+                                <form method="post" asp-page-handler="DeleteReview" asp-route-id="@item.Id">
+                                    <button class="review_action review_action--delete link">
+                                        <i class="icon fas fa-times"></i>
+                                        <span>Delete Review</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </footer>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Reviews.TotalPages > 1)
+            {
+                <nav class="navigation pagination" aria-label="Posts">
+                    <div class="nav-links">
+
+                        @if (Model.Reviews.PageIndex != 1)
+                        {
+                            <a asp-page="ReviewsCulturalActivities"
+                               asp-route-pageIndex="1"
+                               class="first">
+                                First
+                            </a>
+                        }
+
+                        @if (Model.Reviews.HasPreviousPage)
+                        {
+                            <a asp-page="ReviewsCulturalActivities"
+                               asp-route-pageIndex="@(Model.Reviews.PageIndex - 1)"
+                               class="prev">
+                            </a>
+                        }
+
+                        @for (int i = Model.Reviews.PageLeft; i <= Model.Reviews.PageRight; i++)
+                        {
+                            if (i == Model.Reviews.PageIndex)
+                            {
+                                <a onclick="return false" class="active">
+                                    @i
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-page="ReviewsCulturalActivities"
+                                   asp-route-pageIndex="@i">
+                                    @i
+                                </a>
+                            }
+                        }
+
+                        @if (Model.Reviews.HasNextPage)
+                        {
+                            <a asp-page="ReviewsCulturalActivities"
+                               asp-route-pageIndex="@(Model.Reviews.PageIndex + 1)"
+                               class="next">
+                            </a>
+                        }
+
+                        @if (Model.Reviews.PageIndex != Model.Reviews.TotalPages)
+                        {
+                            <a asp-page="ReviewsCulturalActivities"
+                               asp-route-pageIndex="@Model.Reviews.TotalPages"
+                               class="last">
+                                Last
+                            </a>
+                        }
+                    </div>
+                </nav>
+            }
+        </div>
+    }
+    else
+    {
+        <h2>Nothing found</h2>
+        <p>Head over to <a asp-page="/CulturalActivities/Index" class="manage-link">Cultural Activities</a> and add a review to a cultural activity!</p>
+    }
+</div>
+
+<partial name="_ReviewCulturalActivity" model="Model.Review" view-data="ViewData" />
+
+@if (Model.CurrentSort != null)
+{
+    <script>
+        document.getElementById('sortList').value = '@Model.CurrentSort';
+    </script>
+}

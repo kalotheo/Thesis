@@ -1,0 +1,46 @@
+﻿@inject SignInManager<Thesis.Model.User> SignInManager
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+}
+<ul class="nav nav-pills flex-column">
+    <li class="nav-item"><a class="nav-link @ManageNavPages.ManageNavClass(ViewContext)" id="profile" asp-page="./Index">Profile</a></li>
+    @if (this.User.IsInRole("Admin"))
+    {
+        <li class="nav-item"><a class="nav-link @ManageNavPages.CulturalActivitiesCategoriesNavClass(ViewContext)" id="culturalActivitiesCategories" asp-page="./CulturalActivitiesCategories">Cultural Activities Categories</a></li>
+        <li class="nav-item"><a class="nav-link @ManageNavPages.ListingCategoriesNavClass(ViewContext)" id="listingCategories" asp-page="./ListingCategories">Listing Categories</a></li>
+        <li class="nav-item"><a class="nav-link @ManageNavPages.UsersNavClass(ViewContext)" id="users" asp-page="./Users">Users</a></li>
+    }
+    <li class="nav-item"><a class="nav-link @ManageNavPages.RecommendedCulturalActivitiesNavClass(ViewContext)" id="recommendedCulturalActivities" asp-page="./RecommendedCulturalActivities">Recommended Cultural Activities</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.FavouriteCulturalActivitiesNavClass(ViewContext)" id="favouriteCulturalActivities" asp-page="./FavouriteCulturalActivities">Favourite Cultural Activities</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.ReviewsCulturalActivitiesNavClass(ViewContext)" id="reviewsCulturalActivities" asp-page="./ReviewsCulturalActivities">Reviews Cultural Activities</a></li>
+    @if (this.User.IsInRole("Expert"))
+    {
+        <li class="nav-item"><a class="nav-link @ManageNavPages.ManageListingsNavClass(ViewContext)" id="myListings" asp-page="./MyListings">My Listings</a></li>
+    }
+    <li class="nav-item"><a class="nav-link @ManageNavPages.OffersNavClass(ViewContext)" id="offers" asp-page="./Offers">Offers</a></li>
+    <li class="nav-item">
+        <a class="nav-link @ManageNavPages.MessagesNavClass(ViewContext)" id="messages" asp-page="./Messages">
+            Messages
+            @if (ViewData["UnreadMessages"] != null)
+            {
+                @if ((int)ViewData["UnreadMessages"] > 0)
+                {
+                    <small>@ViewData["UnreadMessages"]</small>
+                }
+            }
+        </a>
+    </li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.ManageRequestsNavClass(ViewContext)" id="myRequests" asp-page="./MyRequests">My Requests</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.FavouriteListingsNavClass(ViewContext)" id="favouriteListings" asp-page="./FavouriteListings">Favourite Listings</a></li>
+    <li class="nav-item"><a class="nav-link @ManageNavPages.ReviewsListingsNavClass(ViewContext)" id="reviewsListings" asp-page="./ReviewsListings">Reviews Listings</a></li>
+    @*
+        <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email</a></li>
+        <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Password</a></li>
+        @if (hasExternalLogins)
+        {
+            <li id="external-logins" class="nav-item"><a id="external-login" class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" asp-page="./ExternalLogins">External logins</a></li>
+        }
+        <li class="nav-item"><a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication">Two-factor authentication</a></li>
+    *@
+    <li class="nav-item"><a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData">Personal data</a></li>
+</ul>

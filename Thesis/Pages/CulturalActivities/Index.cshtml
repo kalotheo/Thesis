@@ -1,0 +1,556 @@
+﻿@page
+@model Thesis.Pages.CulturalActivities.IndexModel
+@using Microsoft.AspNetCore.Identity
+@using Thesis.Model
+@using Thesis.Areas.Identity.Pages.Account.Manage
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@{
+    ViewData["Title"] = "Cultural Activities";
+    ViewData["ActivePage"] = ManageNavPages.CulturalActivities;
+}
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+
+@if (Model.CurrentCategory != null)
+{
+    <section class="header-hero listing-category listing-category--view-page">
+        <div class="header-hero_content">
+            <div class="listing-category_header">
+                <div class="listing-category_item-count listing-category_count">@Model.CulturalActivities.Count() Cultural Activities</div>
+                <h1 class="listing-category_name">
+                    @if (Model.SelectedCulturalActivityCategory.CategoryIcon != null)
+                    {
+                        <i class="@Model.SelectedCulturalActivityCategory.CategoryIcon mr-3"></i>
+                    }
+                    @Model.SelectedCulturalActivityCategory.CategoryName
+                </h1>
+                <div class="listing-category_description">@Model.SelectedCulturalActivityCategory.CategoryDescription</div>
+            </div>
+        </div>
+    </section>
+}
+
+<header class="page_header">
+    <form asp-page="Index" class="form--wide form--primary block form form--vendor-search" method="get" data-component="form">
+        <div class="form_fields">
+            <div class="form_field form_field--search">
+                <input type="search" name="searchStr" value="@Model.CurrentSearch" placeholder="Keywords" maxlength="256" class="field field--search">
+                @if (Model.CurrentCategory != null)
+                {
+                    <input type="hidden" name="category" value="@Model.CurrentCategory">
+                }
+                @if (Model.CurrentSubcategory != null)
+                {
+                    <input type="hidden" name="subcategory" value="@Model.CurrentSubcategory">
+                }
+                @if (Model.CurrentDateStart != null)
+                {
+                    <input type="hidden" name="dateStart" id="dateStartSearch">
+                }
+                @if (Model.CurrentDateEnd != null)
+                {
+                    <input type="hidden" name="dateEnd" id="dateEndSearch">
+                }
+                @if (Model.CurrentTags != null)
+                {
+                    <input type="hidden" name="tags" value="@Model.CurrentTags">
+                }
+
+                @if (Model.CurrentSort != null)
+                {
+                    <input type="hidden" name="sortOrder" value="@Model.CurrentSort">
+                }
+            </div>
+        </div>
+        <div class="form_footer">
+            <button type="submit" class="form_button btn btn-primary btn-lg alt field field--submit">
+                <span>Search</span>
+            </button>
+        </div>
+    </form>
+    <button type="button" class="btn btn-lg button button--wide button--mobile button--vendor-filter" data-toggle="modal" data-target="#filterModalCenter" onclick="showModal()">
+        <i class="icon fas fa-sliders-h"></i>
+        <span>Filter</span>
+    </button>
+</header>
+
+<div class="row">
+    <aside class="page_sidebar col-sm-4 site-sidebar">
+        <div>
+            <div>
+                <div class="widget widget widget--vendor-filter">
+                    <div id="filterModalCenter" tabindex="-1" role="dialog" aria-labelledby="filterModalCenterTitle" aria-hidden="true">
+                        <div id="mod_dialog" role="document">
+                            <div id="mod_content">
+                                <div class="modal-header" id="mod_header">
+                                    <h5 class="modal-title" id="exampleModalLongTitle">Filter</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div id="mod_body">
+                                    <form asp-page="Index" method="get" data-component="form" class="form form--vendor-filter">
+                                        <div class="form_fields">
+                                            @if (Model.CurrentSearch != null)
+                                            {
+                                                <input type="hidden" name="searchStr" value="@Model.CurrentSearch">
+                                            }
+                                            <div class="form_field form_field--radio">
+                                                <div class="field field--radio">
+                                                    <ul>
+                                                        <li>
+                                                            <label for="All Categories">
+                                                                <input id="All Categories" type="radio" name="category" value="" onchange="this.form.submit()">
+                                                                <span>All Categories</span>
+                                                            </label>
+                                                            <ul>
+                                                                @foreach (var item in Model.CulturalActivityCategory)
+                                                                {
+                                                                    <li>
+                                                                        <label for="@item.Text">
+                                                                            <input id="@item.Text" type="radio" name="category" value="@item.Text" onchange="this.form.submit()">
+                                                                            <span>@item.Text</span>
+                                                                        </label>
+                                                                    </li>
+                                                                }
+                                                            </ul>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="form_field form_field--radio">
+                                                <div class="field field--radio">
+                                                    <ul>
+                                                        <li>
+
+                                                            <label for="All Subcategories">
+                                                                <input id="All Subcategories" type="radio" name="subcategory" value="" onchange="this.form.submit()">
+                                                                <span>All Subcategories</span>
+                                                            </label>
+                                                            <ul>
+                                                                @if (Model.CulturalActivitySubcategory != null)
+                                                                {
+                                                                    foreach (var item in Model.CulturalActivitySubcategory)
+                                                                    {
+                                                                        <li>
+                                                                            <label for="@item.Text">
+                                                                                <input id="@item.Text" type="radio" name="subcategory" value="@item.Text" onchange="this.form.submit()">
+                                                                                <span>@item.Text</span>
+                                                                            </label>
+                                                                        </li>
+                                                                    }
+                                                                }
+                                                            </ul>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="form_field form_field--date-range">
+                                                <label class="field_label form_label">
+                                                    <span>Dates</span>
+                                                </label>
+                                                <div class="field field--date-range">
+                                                    <input type="date" name="dateStart" id="start" placeholder="Date Start" class="field field--date form-control">
+                                                    <input type="date" name="dateEnd" id="end" placeholder="Date End" class="field field--date form-control">
+                                                </div>
+                                            </div>
+                                            <div class="form_field form_field--select">
+                                                <label class="field_label form_label">
+                                                    <span>Tags</span>
+                                                </label>
+                                                <input id="multidatalist" list="tags-list" name="tags" class="form-control" multiple />
+                                                <datalist id="tags-list">
+                                                    <option selected value="">-</option>
+                                                    @foreach (var item in Model.TagsList)
+                                                    {
+                                                        <option value="@item">@item</option>
+                                                    }
+                                                </datalist>
+                                            </div>
+                                            @if (Model.CurrentSort != null)
+                                            {
+                                                <input type="hidden" name="sortOrder" value="@Model.CurrentSort">
+                                            }
+                                        </div>
+                                        <div class="form_footer">
+                                            <button type="submit" class="form_button btn btn-lg btn-primary alt field field--submit w-100" onclick="updateRangeValues()">
+                                                <span>Filter</span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="page_content col-sm-8">
+        @if (Model.CulturalActivities.Count() > 0)
+        {
+            <div class="page_topbar">
+                <div class="result-count">Showing @Model.CulturalActivities.GetStartRange() - @Model.CulturalActivities.GetEndRange() results of @Model.CulturalActivities.GetTotalCount()</div>
+                <form asp-page="Index" class="form--pivot form form--vendor-sort" data-autosubmit="true" method="get" data-component="form">
+                    <div class="form_fields">
+                        @if (Model.CurrentSearch != null)
+                        {
+                            <input type="hidden" name="searchStr" value="@Model.CurrentSearch">
+                        }
+                        @if (Model.CurrentCategory != null)
+                        {
+                            <input type="hidden" name="category" value="@Model.CurrentCategory">
+                        }
+                        @if (Model.CurrentSubcategory != null)
+                        {
+                            <input type="hidden" name="subcategory" value="@Model.CurrentSubcategory">
+                        }
+                        @if (Model.CurrentDateStart != null)
+                        {
+                            <input type="hidden" name="dateStart" id="dateStartSort">
+                        }
+                        @if (Model.CurrentDateEnd != null)
+                        {
+                            <input type="hidden" name="dateEnd" id="dateEndSort">
+                        }
+                        @if (Model.CurrentTags != null)
+                        {
+                            <input type="hidden" name="tags" value="@Model.CurrentTags">
+                        }
+                        <div class="form_field form_field--select">
+                            <label class="field_label form_label">
+                                <span>Sort by</span>
+                            </label>
+                            <select id="sortList" name="sortOrder" required="required" class="field field--select form-control" onchange="this.form.submit()">
+                                <option name="@Model.CurrentSort" value="rating_desc">Rating ↓</option>
+                                <option name="@Model.CurrentSort" value="rating_asc">Rating ↑</option>
+                                <option name="@Model.CurrentSort" value="dateStart_desc">Date Start ↓</option>
+                                <option name="@Model.CurrentSort" value="dateStart_asc">Date Start ↑</option>
+                                <option name="@Model.CurrentSort" value="dateEnd_desc">Date End ↓</option>
+                                <option name="@Model.CurrentSort" value="dateEnd_asc">Date End ↑</option>
+                                <option name="@Model.CurrentSort" value="title_desc">Title ↓</option>
+                                <option name="@Model.CurrentSort" value="title_asc">Title ↑</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        }
+
+        <div>
+            @if (this.User.IsInRole("Admin"))
+            {
+                <div class="admin-actions create">
+                    <a asp-page="Create" class="btn btn-primary">Create New Cultural Activity</a>
+                </div>
+            }
+            @if (Model.CulturalActivities.Count() > 0)
+            {
+                <div class="events block grid">
+                    <div class="row">
+                        @foreach (var item in Model.CulturalActivities)
+                        {
+                            <div class="grid_item col-sm-6">
+                                <article class="event--view-block">
+                                    @if (item.Images != null)
+                                    {
+                                        <header class="event_header">
+                                            <div class="event_image">
+                                                <a asp-page="View" asp-route-id="@item.Id">
+                                                    @{
+                                                        List<string> images = item.Images.Split(',').ToList();
+                                                        <img src="~/uploadfiles/culturalActivities/@images.First()" alt="@item.Title" loading="lazy">
+                                                    }
+                                                </a>
+                                            </div>
+                                        </header>
+                                    }
+                                    <div class="event_content">
+                                        <div class="event_primary">
+                                            @if (item.DateStart != null && item.DateEnd != null)
+                                            {
+                                                <time class="event_attribute event_attribute--date">
+                                                    <i class="fas fa-fw fa-calendar"></i>
+                                                    @{
+                                                        TimeSpan span = item.DateEnd.Value.Subtract(item.DateStart.Value);
+                                                    }
+                                                    @if (span.Days > 0)
+                                                    {
+                                                        <span>@item.DateStart.Value.ToShortDateString() - @item.DateEnd.Value.ToShortDateString()</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>@item.DateStart.Value.ToShortDateString()</span>
+                                                    }
+                                                </time>
+                                            }
+                                            @if (item.AverageRating != null)
+                                            {
+                                                <div class="event_rating rating rating--large">
+                                                    <div class="rating_bar">
+                                                        <span class="progressbar"></span>
+                                                    </div>
+                                                    <div class="rating_details">
+                                                        <span class="rating_value">
+                                                            <i class="fas fa-star"></i>
+                                                            <span class="review_rating">
+                                                                @item.AverageRating
+                                                            </span>
+                                                        </span>
+                                                        <span class="rating_count">(@item.CountAllRatings)</span>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        <h4 class="event_title">
+                                            <a asp-page="View" asp-route-id="@item.Id">@item.Title</a>
+                                        </h4>
+                                        @if (SignInManager.IsSignedIn(User))
+                                        {
+                                            if (Model.ExistingFavourite.Any(x => x.CulturalActivityId == item.Id))
+                                            {
+                                                foreach (var favourite in Model.ExistingFavourite)
+                                                {
+                                                    if (item.Id.Equals(favourite.CulturalActivityId))
+                                                    {
+                                                        <form method="post" asp-page-handler="DeleteFavourite" asp-route-id="@favourite.Id">
+                                                            <button class="listing_action listing_action--favorite" data-state="active" title="Remove from Favourites">
+                                                                <i class="icon fas fa-heart"></i>
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <form method="post" asp-page-handler="AddFavourite">
+                                                    <input type="hidden" asp-for="Favourite.IdUser" value="@UserManager.GetUserId(User)" />
+                                                    <input type="hidden" asp-for="Favourite.CulturalActivityId" value="@item.Id" />
+                                                    <button class="listing_action listing_action--favorite" title="Add to Favourites">
+                                                        <i class="icon fas fa-heart"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                        }
+
+                                        else
+                                        {
+                                            <a asp-area="Identity" asp-page="/Account/Login" asp-route-ReturnUrl="/CulturalActivities" title="Add to Favourites" class="listing_action listing_action--favorite">
+                                                <i class="icon fas fa-heart"></i>
+                                            </a>
+                                        }
+                                        <div class="event-category meta">
+                                            @if (item.CategoryId != null)
+                                            {
+                                                <a asp-page="/CulturalActivities/Index" asp-route-category="@item.CulturalActivityMainCategory.CategoryName">@item.CulturalActivityMainCategory.CategoryName</a>
+                                                @if (item.SubcategoryId != null)
+                                                {
+                                                    <span> | </span>
+                                                    <a asp-page="/CulturalActivities/Index" asp-route-category="@item.CulturalActivityMainCategory.CategoryName" asp-route-subcategory="@item.CulturalActivitySubcategory.CategoryName">@item.CulturalActivitySubcategory.CategoryName</a>
+                                                }
+                                            }
+                                        </div>
+                                        <div class="event_attribute event_attribute--place">
+                                            <i class="fas fa-fw fa-location-pin"></i>
+                                            <span>@item.Place</span>
+                                        </div>
+                                    </div>
+                                </article>
+                                @if (this.User.IsInRole("Admin"))
+                                {
+                                    <footer class="listing_footer_secondary event_footer_secondary">
+                                        <div class="listing_attributes listing_attributes--primary"></div>
+                                        <div class="listing_actions listing_actions--primary">
+                                            <a asp-page="/CulturalActivities/Edit" asp-route-id="@item.Id" asp-route-category="@item.CategoryId" class="listing_action listing_action--edit link">
+                                                <i class="icon fas fa-edit"></i>
+                                                <span>Edit</span>
+                                            </a>
+                                            <button data-toggle="modal" data-target="#deleteModal" class="listing_action listing_action--delete link" onclick="setDeleteValues('Delete Cultural Activity', 'Are you sure you want to delete this cultural activity?', '@item.Id');">
+                                                <i class="icon fas fa-times"></i>
+                                                <span>Delete</span>
+                                            </button>
+                                        </div>
+                                    </footer>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    @if (Model.CulturalActivities.TotalPages > 1)
+                    {
+                        <nav class="navigation pagination" aria-label="Posts">
+                            <div class="nav-links">
+
+                                @if (Model.CulturalActivities.PageIndex != 1)
+                                {
+                                    <a asp-page="Index"
+                                       asp-route-searchStr="@Model.CurrentSearch"
+                                       asp-route-category="@Model.CurrentCategory"
+                                       asp-route-subcategory="@Model.CurrentSubcategory"
+                                       asp-route-tags="@Model.CurrentTags"
+                                       asp-route-dateStart="@Model.CurrentDateStart"
+                                       asp-route-dateEnd="@Model.CurrentDateEnd"
+                                       asp-route-sortOrder="@Model.CurrentSort"
+                                       asp-route-pageIndex="1"
+                                       class="first">
+                                        First
+                                    </a>
+                                }
+
+                                @if (Model.CulturalActivities.HasPreviousPage)
+                                {
+                                    <a asp-page="Index"
+                                       asp-route-searchStr="@Model.CurrentSearch"
+                                       asp-route-category="@Model.CurrentCategory"
+                                       asp-route-subcategory="@Model.CurrentSubcategory"
+                                       asp-route-tags="@Model.CurrentTags"
+                                       asp-route-dateStart="@Model.CurrentDateStart"
+                                       asp-route-dateEnd="@Model.CurrentDateEnd"
+                                       asp-route-sortOrder="@Model.CurrentSort"
+                                       asp-route-pageIndex="@(Model.CulturalActivities.PageIndex - 1)"
+                                       class="prev">
+                                    </a>
+                                }
+
+                                @for (int i = Model.CulturalActivities.PageLeft; i <= Model.CulturalActivities.PageRight; i++)
+                                {
+                                    if (i == Model.CulturalActivities.PageIndex)
+                                    {
+                                        <a onclick="return false" class="active">
+                                            @i
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-page="Index"
+                                           asp-route-searchStr="@Model.CurrentSearch"
+                                           asp-route-category="@Model.CurrentCategory"
+                                           asp-route-subcategory="@Model.CurrentSubcategory"
+                                           asp-route-tags="@Model.CurrentTags"
+                                           asp-route-dateStart="@Model.CurrentDateStart"
+                                           asp-route-dateEnd="@Model.CurrentDateEnd"
+                                           asp-route-sortOrder="@Model.CurrentSort"
+                                           asp-route-pageIndex="@i">
+                                            @i
+                                        </a>
+                                    }
+                                }
+
+                                @if (Model.CulturalActivities.HasNextPage)
+                                {
+                                    <a asp-page="Index"
+                                       asp-route-searchStr="@Model.CurrentSearch"
+                                       asp-route-category="@Model.CurrentCategory"
+                                       asp-route-subcategory="@Model.CurrentSubcategory"
+                                       asp-route-tags="@Model.CurrentTags"
+                                       asp-route-dateStart="@Model.CurrentDateStart"
+                                       asp-route-dateEnd="@Model.CurrentDateEnd"
+                                       asp-route-sortOrder="@Model.CurrentSort"
+                                       asp-route-pageIndex="@(Model.CulturalActivities.PageIndex + 1)"
+                                       class="next">
+                                    </a>
+                                }
+
+                                @if (Model.CulturalActivities.PageIndex != Model.CulturalActivities.TotalPages)
+                                {
+                                    <a asp-page="Index"
+                                       asp-route-searchStr="@Model.CurrentSearch"
+                                       asp-route-category="@Model.CurrentCategory"
+                                       asp-route-subcategory="@Model.CurrentSubcategory"
+                                       asp-route-tags="@Model.CurrentTags"
+                                       asp-route-dateStart="@Model.CurrentDateStart"
+                                       asp-route-dateEnd="@Model.CurrentDateEnd"
+                                       asp-route-sortOrder="@Model.CurrentSort"
+                                       asp-route-pageIndex="@Model.CulturalActivities.TotalPages"
+                                       class="last">
+                                        Last
+                                    </a>
+                                }
+
+                            </div>
+                        </nav>
+                    }
+                </div>
+            }
+
+            else
+            {
+                <h2>Nothing found</h2>
+                <p>Sorry, but nothing matched your search terms. Please try again with some different keywords.</p>
+            }
+        </div>
+
+    </div>
+</div>
+
+<partial name="_DeleteModal" />
+
+@if (Model.CurrentSort != null)
+{
+    <script>
+        document.getElementById('sortList').value = '@Model.CurrentSort';
+    </script>
+}
+
+@if (Model.CurrentCategory != null)
+{
+    <script>
+        document.getElementById('@Model.CurrentCategory').checked = true;
+    </script>
+}
+
+else
+{
+    <script>
+        document.getElementById('All Categories').checked = true;
+    </script>
+}
+
+@if (Model.CurrentSubcategory != null)
+{
+    <script>
+        document.getElementById('@Model.CurrentSubcategory').checked = true;
+    </script>
+}
+
+else
+{
+    <script>
+        document.getElementById('All Subcategories').checked = true;
+    </script>
+}
+
+@if (Model.CurrentDateStart != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('start').value = formatDate('@Model.CurrentDateStart.Value.ToShortDateString()');
+            document.getElementById('dateStartSearch').value = document.getElementById('start').value;
+            if (document.getElementById('dateStartSort') != null) {
+                document.getElementById('dateStartSort').value = document.getElementById('start').value;
+            }
+        }, false);
+
+    </script>
+}
+
+@if (Model.CurrentDateEnd != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('end').value = formatDate('@Model.CurrentDateEnd.Value.ToShortDateString()');
+            document.getElementById('dateEndSearch').value = document.getElementById('end').value;
+            if (document.getElementById('dateEndSort') != null) {
+                document.getElementById('dateEndSort').value = document.getElementById('end').value;
+            }
+        }, false);
+    </script>
+}
+
+@if (Model.CurrentTags != null)
+{
+    <script>
+        document.getElementById('multidatalist').value = '@Model.CurrentTags';
+    </script>
+}

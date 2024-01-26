@@ -1,0 +1,39 @@
+﻿@page
+@model Thesis.Areas.Identity.Pages.Account.Manage.UserRolesModel
+@{
+    ViewData["Title"] = "User Roles of " + Model.UserSelected.FirstName + " " + Model.UserSelected.LastName;
+    ViewData["ActivePage"] = ManageNavPages.Users;
+}
+
+<div class="page-manage-content">
+    <h1 class="page_title">@ViewData["Title"]</h1>
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
+
+    <form method="post">
+        <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+        <input type="hidden" asp-for="UserSelected.Id" />
+
+        <div class="form-group">
+            @for (int i = 0; i < Model.ApplicationRoles.Count; i++)
+            {
+                if (Model.ApplicationRoles[i].Text.Equals("Expert"))
+                {
+                    <input type="hidden" asp-for="@Model.ApplicationRoles[i].Text" />
+                    <input asp-for="@Model.ApplicationRoles[i].Selected" disabled="disabled" />
+                    @Model.ApplicationRoles[i].Text
+                }
+                else
+                {
+                    <input type="hidden" asp-for="@Model.ApplicationRoles[i].Text" />
+                    <input asp-for="@Model.ApplicationRoles[i].Selected" />
+                    @Model.ApplicationRoles[i].Text
+                }
+            }
+        </div>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+    </form>
+</div>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

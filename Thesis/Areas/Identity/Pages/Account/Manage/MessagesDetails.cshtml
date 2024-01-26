@@ -1,0 +1,144 @@
+﻿@page
+@model Thesis.Areas.Identity.Pages.Account.Manage.MessagesDetailsModel
+@{
+    ViewData["Title"] = "Messages from " + Model.UserSpeaker.FirstName + " " + Model.UserSpeaker.LastName;
+    ViewData["ActivePage"] = ManageNavPages.Messages;
+    Html.AntiForgeryToken();
+}
+@using Microsoft.AspNetCore.Identity
+@using Thesis.Model
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+<div class="page-manage-content">
+    <h1 class="page_title">@ViewData["Title"]</h1>
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
+    <div class="messages grid">
+        @foreach (var item in Model.Messages)
+        {
+            if (item.UserSender.Id.Equals(Model.UserManager.Id))
+            {
+                <div class="grid_item">
+                    <div class="message message--view-block message--sent">
+                        <header class="message_header">
+                            @if (item.ListingId != null)
+                            {
+                                if (item.Listing.Visibility)
+                                {
+                                    <a asp-page="/Listings/View" asp-route-id="@item.ListingId" target="_blank" class="message_listing link">
+                                        <i class="icon fas fa-external-link-alt"></i>
+                                        <span>@item.Listing.Title</span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span>@item.Listing.Title</span>
+                                }
+                            }
+                            @if (item.RequestId != null)
+                            {
+                                <a asp-page="/Requests/View" asp-route-id="@item.RequestId" target="_blank" class="message_listing link">
+                                    <i class="icon fas fa-external-link-alt"></i>
+                                    <span>@item.Request.Title</span>
+                                </a>
+                            }
+                            <div class="message_details">
+                                <strong class="message_sender">@item.UserSender.FirstName @item.UserSender.LastName</strong>
+                                <time class="message_sent-date message_date meta" datetime="@item.MessageDate">@item.MessageDate</time>
+                            </div>
+                        </header>
+                        <div class="message_content">
+                            <div class="message_text">
+                                <p>@Html.Raw(item.MessageText)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="grid_item">
+                    <div class="message message--view-block message--read">
+                        <header class="message_header">
+                            @if (item.ListingId != null)
+                            {
+                                <a asp-page="/Listings/View" asp-route-id="@item.ListingId" target="_blank" class="message_listing link">
+                                    <i class="icon fas fa-external-link-alt"></i>
+                                    <span>@item.Listing.Title</span>
+                                </a>
+                            }
+                            @if (item.RequestId != null)
+                            {
+                                <a asp-page="/Requests/View" asp-route-id="@item.RequestId" target="_blank" class="message_listing link">
+                                    <i class="icon fas fa-external-link-alt"></i>
+                                    <span>@item.Request.Title</span>
+                                </a>
+                            }
+                            <div class="message_details">
+                                @if (Model.ExpertSender != null)
+                                {
+                                    <a asp-page="/Experts/View" asp-route-id="@Model.ExpertSender.User.UserName" target="_blank" class="link">
+                                        <strong class="message_sender">@item.UserSender.FirstName @item.UserSender.LastName</strong>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <strong class="message_sender">@item.UserSender.FirstName @item.UserSender.LastName</strong>
+                                }
+                                <time class="message_sent-date message_date meta" datetime="@item.MessageDate">@item.MessageDate</time>
+                            </div>
+                        </header>
+                        <div class="message_content">
+                            <div class="message_text">
+                                <p>@Html.Raw(item.MessageText)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <form method="post" asp-route-id="@Model.UserSpeaker.UserName" data-model="message" data-message="Your message has been sent." data-component="form" class="form form--message-send">
+        <div class="form_fields">
+            <input type="hidden" asp-for="Message.IdSender" value="@Model.UserManager.Id" />
+            <input type="hidden" asp-for="Message.IdReceiver" value="@Model.UserSpeaker.Id">
+            <div class="form-group">
+                <label asp-for="Message.MessageText" class="field_label form_label"></label>
+                <ejs-richtexteditor id="messageRTE" ejs-for="Message.MessageText" toolbarClick="toolbarClick">
+                    <e-richtexteditor-insertimagesettings saveUrl="?handler=Save" path="/uploadfiles/messages/"></e-richtexteditor-insertimagesettings>
+                </ejs-richtexteditor>
+            </div>
+        </div>
+        <div class="form_footer">
+            <button type="submit" class="btn btn-primary">
+                <span>Send Message</span>
+            </button>
+        </div>
+    </form>
+
+</div>
+
+<script>
+    function toolbarClick(e) {
+        if (e.item.id == "messageRTE_toolbar_Image") {
+            var element = document.getElementById('_upload')
+            element.ej2_instances[0].uploading = function upload(args) {
+                args.currentRequest.setRequestHeader('XSRF-TOKEN', document.getElementsByName('_RequestVerificationToken')[0].value);
+            }
+        }
+    }
+
+    function onImageUploadSuccess(args) {
+        if (args.e.currentTarget.getResponseHeader('name') != null) {
+            args.file.name = args.e.currentTarget.getResponseHeader('name');
+            let filename = document.querySelectorAll(".e-file-name")[0];
+            filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
+            filename.title = args.file.name;
+        }
+    }
+</script>
+
+<script>
+    window.scrollTo(0, document.body.scrollHeight);
+</script>

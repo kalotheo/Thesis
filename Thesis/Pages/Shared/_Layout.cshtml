@@ -1,0 +1,139 @@
+﻿@using Thesis.Areas.Identity.Pages.Account.Manage
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Thesis</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/jqueryui/themes/smoothness/jquery-ui.min.css">
+    <link rel="stylesheet" href="~/lib/image-uploader/dist/css/image-uploader.min.css">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
+    <link rel="stylesheet" href="//cdn.syncfusion.com/ej2/fluent.css" />
+</head>
+<body id="body">
+    <header>
+        <div class="header-navbar">
+            <div class="header-navbar_start">
+                <div class="header-logo">
+                    <a asp-page="/Index">
+                        <img src="/images/logo.png" height="40" alt="Thesis" decoding="async">
+                    </a>
+                </div>
+            </div>
+            <div class="header-navbar_middle">
+                <nav class="header-navbar_menu">
+                    <partial name="_MenuPartial" />
+                </nav>
+            </div>
+            <div class="header-navbar_end">
+                <div class="header-navbar_burger">
+                    <a id="burger-action" href="javascript:toggleMenu()">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                    <partial name="_MenuPartial" />
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <main role="main" class="py-5">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-widgets">
+                <div class="row">
+                    <div class="col-sm">
+                        <p>
+                            <a asp-page="/Index">
+                                <img src="/images/logo.png" height="40" alt="Thesis" decoding="async">
+                            </a>
+                        </p>
+                        <p>Find a cultural activity of any kind and get help from thousands of trusted experts.</p>
+                    </div>
+                    <div class="col-sm">
+                        <div class="widget_nav_menu">
+                            <h5 class="@ManageNavPages.CulturalActivitiesNavClass(ViewContext)">
+                                <a asp-page="/CulturalActivities/Index">Cultural Activities</a>
+                            </h5>
+                            <ul>
+                                @if (this.User.IsInRole("Admin"))
+                                {
+                                    <li class="@ManageNavPages.CreateCulturalActivityNavClass(ViewContext)"><a asp-page="/CulturalActivities/Create">Create New Cultural Activity</a></li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-sm">
+                        <div class="widget_nav_menu">
+                            <h5 class="@ManageNavPages.ExpertsNavClass(ViewContext)">
+                                <a asp-page="/Experts/Index">Experts</a>
+                            </h5>
+                        </div>
+                    </div>
+                    <div class="col-sm">
+                        <div class="widget_nav_menu">
+                            <h5 class="@ManageNavPages.ListingsNavClass(ViewContext)">
+                                <a asp-page="/Listings/Index">Listings</a>
+                            </h5>
+                            <ul>
+                                @if (this.User.IsInRole("Expert"))
+                                {
+                                    <li class="@ManageNavPages.CreateListingNavClass(ViewContext)"><a asp-page="/Listings/Create">Create New Listing</a></li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-sm">
+                        <div class="widget_nav_menu">
+                            <h5 class="@ManageNavPages.RequestsNavClass(ViewContext)">
+                                <a asp-page="/Requests/Index">Requests</a>
+                            </h5>
+                            <ul>
+                                <li class="@ManageNavPages.CreateRequestNavClass(ViewContext)"><a asp-page="/Requests/Create">Create New Request</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-navbar">
+                <div class="footer-navbar_start">
+                    <div class="footer-navbar_copyright">
+                        © 2022 Thesis
+                    </div>
+                </div>
+                <div class="footer-navbar_end">
+                    <nav class="footer-navbar_menu">
+                        <ul id="menu-footer" class="menu">
+                            <li>
+                                <a href="#">Terms of Use</a>
+                            </li>
+                            <li>
+                                <a href="#">Privacy Policy</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jqueryui/jquery-ui.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/image-uploader/dist/js/image-uploader.min.js"></script>
+    <script src="~/lib/jquery-shorten/dist/jquery.shorten.1.0.js"></script>
+    <script src="~/lib/jquery-remove-upcase-accents/dist/jquery.remove-upcase-accents.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+    <script src="//cdn.syncfusion.com/ej2/19.4.56/dist/ej2.min.js"></script>
+    <ejs-scripts></ejs-scripts>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

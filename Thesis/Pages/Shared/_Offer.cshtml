@@ -1,0 +1,51 @@
+﻿@model Offer
+@using Microsoft.AspNetCore.Identity
+@using Thesis.Model
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@{
+    string offerPageHandler = "";
+    if (ViewData["offerPageHandler"] != null)
+    {
+        offerPageHandler = ViewData["offerPageHandler"].ToString();
+    }
+    int routeRequestId = 0;
+    if (ViewData["RequestId"] != null)
+    {
+        routeRequestId = (int)ViewData["RequestId"];
+    }
+}
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <!-- Offer Modal -->
+    <div class="modal fade" id="offerModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="offerModalTitle">Make an Offer</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" asp-page-handler="@offerPageHandler" asp-route-id2="@routeRequestId">
+                    <div class="modal-body">
+                        <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+                        <input type="hidden" asp-for="ExpertId" value="@UserManager.GetUserId(User)" />
+                        <input type="hidden" asp-for="RequestId" id="requestId" />
+                        <input type="hidden" asp-for="Id" id="offerId" />
+                        <input type="hidden" id="routeId" />
+                        <div class="form-group">
+                            <label asp-for="OfferText" class="field_label form_label"></label>
+                            <textarea class="form-control textarea-min-height" asp-for="OfferText" id="offerText"></textarea>
+                            <span asp-validation-for="OfferText" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" value="Send" class="btn btn-lg btn-primary">Submit Offer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

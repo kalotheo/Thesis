@@ -1,0 +1,99 @@
+﻿@page
+@model Thesis.Pages.Listings.CreateModel
+@using Thesis.Areas.Identity.Pages.Account.Manage
+@{
+    ViewData["Title"] = "Create New Listing";
+    ViewData["ActivePage"] = ManageNavPages.CreateListing;
+    Html.AntiForgeryToken();
+}
+
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+<h1 class="page_title">@ViewData["Title"]</h1>
+<form method="post" enctype="multipart/form-data" class="form form--listing-submit">
+    <div class="text-danger" asp-validation-summary="All"></div>
+    <input type="hidden" asp-for="Listing.ExpertId" value="@Model.Expert.Id" />
+    <div class="form_fields">
+
+        <div class="form_field form_field--select">
+            <label asp-for="Listing.CategoryId" class="field_label form_label"></label>
+            <select asp-for="Listing.CategoryId" class="form-control" asp-items="@Model.ListingCategory">
+            </select>
+            <span asp-validation-for="Listing.CategoryId" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--attachment-upload">
+            <label asp-for="FileUpload.Files" class="field_label form_label"></label>
+            <div class="input-images-1"></div>
+        </div>
+
+        <div class="form_field form_field--text">
+            <label asp-for="Listing.Title" class="field_label form_label"></label>
+            <input asp-for="Listing.Title" class="form-control" />
+            <span asp-validation-for="Listing.Title" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--number">
+            <label asp-for="Listing.HourlyRate" class="field_label form_label"></label>
+            <input asp-for="Listing.HourlyRate" class="form-control" type="number" />
+            <span asp-validation-for="Listing.HourlyRate" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--select">
+            <label asp-for="Listing.Availability" class="field_label form_label"></label>
+            <select asp-for="Listing.Availability" class="form-control" asp-items="@Model.ListingAvailability">
+            </select>
+            <span asp-validation-for="Listing.Availability" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--description">
+            <label asp-for="Listing.Description" class="field_label form_label"></label>
+            <ejs-richtexteditor id="descriptionRTE" ejs-for="Listing.Description" toolbarClick="toolbarClick" imageUploadSuccess="onImageUploadSuccess">
+                <e-richtexteditor-insertimagesettings saveUrl="?handler=Save" path="/uploadfiles/listings/"></e-richtexteditor-insertimagesettings>
+            </ejs-richtexteditor>
+            <span asp-validation-for="Listing.Description" id="descriptionMsg" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--tags">
+            <label asp-for="Listing.Tags" class="field_label form_label"></label>
+            <input id="multidatalist" list="tags-list" asp-for="Listing.Tags" class="form-control" multiple />
+            <datalist id="tags-list">
+                @foreach (var item in Model.TagsList)
+                {
+                    <option value="@item">@item</option>
+                }
+            </datalist>
+            <span asp-validation-for="Listing.Tags" id="tagsMsg" class="text-danger"></span>
+        </div>
+
+        <div class="form_footer">
+            <input type="submit" value="Submit Listing" class="btn btn-primary" />
+        </div>
+
+    </div>
+</form>
+
+<script>
+
+    function toolbarClick(e) {
+        if (e.item.id == "descriptionRTE_toolbar_Image") {
+            var element = document.getElementById('_upload')
+            element.ej2_instances[0].uploading = function upload(args) {
+                args.currentRequest.setRequestHeader('XSRF-TOKEN', document.getElementsByName('_RequestVerificationToken')[0].value);
+            }
+        }
+    }
+
+    function onImageUploadSuccess(args) {
+        if (args.e.currentTarget.getResponseHeader('name') != null) {
+            args.file.name = args.e.currentTarget.getResponseHeader('name');
+            let filename = document.querySelectorAll(".e-file-name")[0];
+            filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
+            filename.title = args.file.name;
+        }
+    }
+
+</script>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

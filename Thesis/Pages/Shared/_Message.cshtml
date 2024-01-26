@@ -1,0 +1,59 @@
+﻿@model Message
+@using Microsoft.AspNetCore.Identity
+@using Thesis.Model
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@{
+    int routeListingId = 0;
+    if (ViewData["ListingId"] != null)
+    {
+        routeListingId = (int)ViewData["ListingId"];
+    }
+    string routeExpertUsername = null;
+    if (ViewData["ExpertUsername"] != null)
+    {
+        routeExpertUsername = ViewData["ExpertUsername"].ToString();
+    }
+    string routeId = "";
+    if (routeListingId == 0 && routeExpertUsername != null)
+    {
+        routeId = routeExpertUsername;
+    }
+    else
+    {
+        routeId = routeListingId.ToString();
+    }
+}
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <!-- Message Modal -->
+    <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Reply to Listing</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="post" asp-page-handler="Message" asp-route-redirectPageId="@routeId">
+                    <div class="modal-body">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="IdSender" value="@UserManager.GetUserId(User)" />
+                        <input type="hidden" asp-for="IdReceiver" id="expertId" />
+                        <input type="hidden" asp-for="ListingId" id="listingId" />
+                        <div class="form-group">
+                            <label asp-for="MessageText" class="field_label form_label"></label>
+                            <textarea class="form-control textarea-min-height" asp-for="MessageText"></textarea>
+                            <span asp-validation-for="MessageText" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" value="Send" class="btn btn-lg btn-primary">Send Message</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

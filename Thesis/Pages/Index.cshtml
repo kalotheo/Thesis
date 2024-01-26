@@ -1,0 +1,555 @@
+﻿@page
+@model IndexModel
+@using Microsoft.AspNetCore.Identity
+@using Thesis.Model
+@using Thesis.Areas.Identity.Pages.Account.Manage
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@{
+    ViewData["Title"] = "Home page";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+    var cultActslider = Model.CulturalActivities.Count() > 2 ? "event-slider" : "";
+    var expertSlider = Model.Experts.Count() > 2 ? "vendor-slider" : "";
+}
+
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+
+<!-- CULTURAL ACTIVITIES -->
+
+<div class="cultural-activities">
+
+    @if (Model.CulturalActivities.Count() > 0)
+    {
+        <section class="header-hero header-hero--large">
+            <div class="header-hero_content">
+                <div class="row">
+                    <div class="header-hero_column col">
+                        <h1>Find a cultural activity of any kind</h1>
+                        <p class="has-medium-font-size mb-3">Cultural activities worth paying attention to</p>
+                        @if (Model.CulturalActivitiesTagsList.Count() > 0)
+                        {
+                            <div class="listing-tags block tagcloud">
+                                @foreach (var item in Model.CulturalActivitiesTagsList.Take(10))
+                                {
+                                    <a asp-page="/CulturalActivities/Index" asp-route-tags="@item" class="listing-tag tag-cloud-link">@item</a>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <div class="header-hero_column col">
+
+                        <div class="row">
+
+                            <div class="col">
+                                @if (Model.CulturalActivities.First().Images != null)
+                                {
+                                    <a asp-page="CulturalActivities/View" asp-route-id="@Model.CulturalActivities.First().Id">
+                                        @{
+                                            List<string> images = Model.CulturalActivities.First().Images.Split(',').ToList();
+                                        }
+                                        <img src="~/uploadfiles/culturalActivities/@images.First()"
+                                             class="w-100 shadow-1-strong rounded mb-3"
+                                             alt="@Model.CulturalActivities.First().Title">
+                                    </a>
+                                }
+
+                                @if (Model.CulturalActivities.Count() > 1)
+                                {
+                                    if (Model.CulturalActivities.Skip(1).First().Images != null)
+                                    {
+                                        <a asp-page="/CulturalActivities/View" asp-route-id="@Model.CulturalActivities.Skip(1).First().Id">
+                                            @{
+                                                List<string> images = Model.CulturalActivities.Skip(1).First().Images.Split(',').ToList();
+                                            }
+                                            <img src="~/uploadfiles/culturalActivities/@images.First()"
+                                                 class="w-100 shadow-1-strong rounded mb-3"
+                                                 alt="@Model.CulturalActivities.Skip(1).First().Title">
+
+                                        </a>
+                                    }
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="row mb-5">
+            <div class="col-sm-6">
+                <form asp-page="CulturalActivities/Index" method="get" class="form--wide form--primary block form form--listing-search">
+                    <div class="form_fields">
+                        <div class="form_field form_field--search">
+                            <input type="search" name="searchStr" value="" placeholder="Keywords" maxlength="256" class="field field--search">
+                        </div>
+                    </div>
+                    <div class="form_footer">
+                        <button type="submit" class="form_button btn btn-primary field field--submit">
+                            <span>Search</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row mb-3 listing-categories grid block">
+            @foreach (var categoryItem in Model.CulturalActivityCategoryItems.OrderByDescending(x => x.Value).Take(8))
+            {
+                foreach (var item in Model.CulturalActivityCategories.Where(x => x.Id == categoryItem.Key))
+                {
+                    <div class="grid_item listing-category-item col-sm-3">
+                        <article class="listing-category listing-category--view-block">
+
+                            <header class="listing-category_header">
+                                @if (item.CategoryIcon != null)
+                                {
+                                    <div class="listing-category_icon">
+                                        <a asp-page="/CulturalActivities/Index" asp-route-category="@item.CategoryName">
+                                            <i class="icon @item.CategoryIcon"></i>
+                                        </a>
+                                    </div>
+                                }
+                            </header>
+
+                            <div class="listing-category_content">
+                                <h4 class="listing-category_name">
+                                    <a asp-page="/CulturalActivities/Index" asp-route-category="@item.CategoryName" class="link">@item.CategoryName</a>
+                                </h4>
+                                <div class="listing-category_description">@item.CategoryDescription</div>
+                                <div class="listing-category_details listing-category_details--primary">
+                                    <div class="listing-category_item-count listing-category_count">@categoryItem.Value Cultural Activities</div>
+                                    <a asp-page="/CulturalActivities/Index" asp-route-category="@item.CategoryName" class="listing-category_link">
+                                        <i class="icon fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="mb-3">
+            <h2 class="content-title">@Model.ContentTitle</h2>
+            <p class="content-subtitle">@Model.ContentSubtitle</p>
+            <div data-component="slider" class="events--slider block grid" data-type="carousel">
+                <div class="row @cultActslider" id="event-slick-slider">
+                    @foreach (var item in Model.CulturalActivities)
+                    {
+                        <div class="grid_item col-sm-6">
+                            <article class="event--view-block">
+                                @if (item.Images != null)
+                                {
+                                    <header class="event_header">
+                                        <div class="event_image">
+                                            <a asp-page="/CulturalActivities/View" asp-route-id="@item.Id">
+                                                @{
+                                                    List<string> images = item.Images.Split(',').ToList();
+                                                    <img src="~/uploadfiles/culturalActivities/@images.First()" alt="@item.Title" loading="lazy">
+                                                }
+                                            </a>
+                                        </div>
+                                    </header>
+                                }
+                                <div class="event_content">
+                                    <div class="event_primary">
+                                        @if (item.DateStart != null && item.DateEnd != null)
+                                        {
+                                            <time class="event_attribute event_attribute--date">
+                                                <i class="fas fa-fw fa-calendar"></i>
+                                                @{
+                                                    TimeSpan span = item.DateEnd.Value.Subtract(item.DateStart.Value);
+                                                }
+                                                @if (span.Days > 0)
+                                                {
+                                                    <span>@item.DateStart.Value.ToShortDateString() - @item.DateEnd.Value.ToShortDateString()</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>@item.DateStart.Value.ToShortDateString()</span>
+                                                }
+                                            </time>
+                                        }
+                                        @if (item.AverageRating != null)
+                                        {
+                                            <div class="event_rating rating rating--large">
+                                                <div class="rating_bar">
+                                                    <span class="progressbar"></span>
+                                                </div>
+                                                <div class="rating_details">
+                                                    <span class="rating_value">
+                                                        <i class="fas fa-star"></i>
+                                                        <span class="review_rating">
+                                                            @item.AverageRating
+                                                        </span>
+                                                    </span>
+                                                    <span class="rating_count">(@item.CountAllRatings)</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                    <h4 class="event_title">
+                                        <a asp-page="/CulturalActivities/View" asp-route-id="@item.Id">@item.Title</a>
+                                    </h4>
+                                    @if (SignInManager.IsSignedIn(User))
+                                    {
+                                        if (Model.ExistingFavourite.Any(x => x.CulturalActivityId == item.Id))
+                                        {
+                                            foreach (var favourite in Model.ExistingFavourite)
+                                            {
+                                                if (item.Id.Equals(favourite.CulturalActivityId))
+                                                {
+                                                    <form method="post" asp-page-handler="DeleteFavourite" asp-route-id="@favourite.Id">
+                                                        <button class="listing_action listing_action--favorite" data-state="active" title="Remove from Favourites">
+                                                            <i class="icon fas fa-heart"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <form method="post" asp-page-handler="AddFavourite">
+                                                <input type="hidden" asp-for="Favourite.IdUser" value="@UserManager.GetUserId(User)" />
+                                                <input type="hidden" asp-for="Favourite.CulturalActivityId" value="@item.Id" />
+                                                <button class="listing_action listing_action--favorite" title="Add to Favourites">
+                                                    <i class="icon fas fa-heart"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    }
+
+                                    else
+                                    {
+                                        <a asp-area="Identity" asp-page="/Account/Login" asp-route-ReturnUrl="/Index" title="Add to Favourites" class="listing_action listing_action--favorite">
+                                            <i class="icon fas fa-heart"></i>
+                                        </a>
+                                    }
+                                    <div class="event-category meta">
+                                        @if (item.CategoryId != null)
+                                        {
+                                            <a asp-page="/CulturalActivities/Index" asp-route-category="@item.CulturalActivityMainCategory.CategoryName">@item.CulturalActivityMainCategory.CategoryName</a>
+                                            @if (item.SubcategoryId != null)
+                                            {
+                                                <span> | </span>
+                                                <a asp-page="/CulturalActivities/Index" asp-route-category="@item.CulturalActivityMainCategory.CategoryName" asp-route-subcategory="@item.CulturalActivitySubcategory.CategoryName">@item.CulturalActivitySubcategory.CategoryName</a>
+                                            }
+                                        }
+                                    </div>
+                                    <div class="event_attribute event_attribute--place">
+                                        <i class="fas fa-fw fa-location-pin"></i>
+                                        <span>@item.Place</span>
+                                    </div>
+                                </div>
+                            </article>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <footer class="listing_footer_secondary event_footer_secondary">
+                                    <div class="listing_attributes listing_attributes--primary"></div>
+                                    <div class="listing_actions listing_actions--primary">
+                                        <a asp-page="/CulturalActivities/Edit" asp-route-id="@item.Id" asp-route-category="@item.CategoryId" class="listing_action listing_action--edit link">
+                                            <i class="icon fas fa-edit"></i>
+                                            <span>Edit</span>
+                                        </a>
+                                        <button data-toggle="modal" data-target="#deleteModal" class="listing_action listing_action--delete link" onclick="setDeleteValues('Delete Cultural Activity', 'Are you sure you want to delete this cultural activity?', '@item.Id');">
+                                            <i class="icon fas fa-times"></i>
+                                            <span>Delete</span>
+                                        </button>
+                                    </div>
+                                </footer>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+    }
+</div>
+
+<hr />
+
+<!-- LISTINGS -->
+
+<div>
+
+    <section class="header-hero header-hero--large">
+        <div class="header-hero_content">
+            <div class="row">
+                <div class="header-hero_column col">
+                    <h1>Find an expert for any kind of task</h1>
+                    <p class="has-medium-font-size mb-3">Get help from thousands of trusted experts.</p>
+                    @if (Model.ListingsTagsList.Count() > 0)
+                    {
+                        <div class="listing-tags block tagcloud">
+                            @foreach (var item in Model.ListingsTagsList.Take(10))
+                            {
+                                <a asp-page="/Listings/Index" asp-route-tags="@item" class="listing-tag tag-cloud-link">@item</a>
+                            }
+                        </div>
+                    }
+                </div>
+
+                @if (Model.Experts.Count() > 0)
+                {
+                    <div class="header-hero_column col">
+                        <div class="row">
+                            <div class="col">
+
+                                <a asp-page="/Experts/View" asp-route-id="@Model.Experts.First().User.UserName">
+                                    <img src="~/uploadfiles/profiles/@(Model.Experts.First().User.ProfilePicture ?? "user-square.svg")"
+                                         class="w-100 shadow-1-strong rounded mb-3"
+                                         alt="@Model.Experts.First().User.LastName" />
+                                </a>
+
+                                @if (Model.Experts.Count() > 1)
+                                {
+                                    <a asp-page="/Experts/View" asp-route-id="@Model.Experts.Skip(1).First().User.UserName">
+                                        <img src="~/uploadfiles/profiles/@(Model.Experts.Skip(1).First().User.ProfilePicture ?? "user-square.svg")"
+                                             class="w-100 shadow-1-strong rounded mb-3"
+                                             alt="@Model.Experts.Skip(1).First().User.LastName" />
+                                    </a>
+                                }
+                            </div>
+
+                            <div class="col">
+                                @if (Model.Experts.Count() > 2)
+                                {
+                                    <a asp-page="/Experts/View" asp-route-id="@Model.Experts.Skip(2).First().User.UserName">
+                                        <img src="~/uploadfiles/profiles/@(Model.Experts.Skip(2).First().User.ProfilePicture ?? "user-square.svg")"
+                                             class="w-100 shadow-1-strong rounded mb-3"
+                                             alt="@Model.Experts.Skip(2).First().User.LastName" />
+                                    </a>
+                                }
+
+                                @if (Model.Experts.Count() > 3)
+                                {
+                                    <a asp-page="/Experts/View" asp-route-id="@Model.Experts.Skip(3).First().User.UserName">
+                                        <img src="~/uploadfiles/profiles/@(Model.Experts.Skip(3).First().User.ProfilePicture ?? "user-square.svg")"
+                                             class="w-100 shadow-1-strong rounded mb-3"
+                                             alt="@Model.Experts.Skip(3).First().User.LastName" />
+                                    </a>
+                                }
+                            </div>
+
+                            <div class="col">
+                                @if (Model.Experts.Count() > 4)
+                                {
+                                    <a asp-page="/Experts/View" asp-route-id="@Model.Experts.Skip(4).First().User.UserName">
+                                        <img src="~/uploadfiles/profiles/@(Model.Experts.Skip(4).First().User.ProfilePicture ?? "user-square.svg")"
+                                             class="w-100 shadow-1-strong rounded mb-3"
+                                             alt="@Model.Experts.Skip(4).First().User.LastName" />
+                                    </a>
+                                }
+
+                                @if (Model.Experts.Count() > 5)
+                                {
+                                    <a asp-page="/Experts/View" asp-route-id="@Model.Experts.Skip(5).First().User.UserName">
+                                        <img src="~/uploadfiles/profiles/@(Model.Experts.Skip(5).First().User.ProfilePicture ?? "user-square.svg")"
+                                             class="w-100 shadow-1-strong rounded mb-3"
+                                             alt="@Model.Experts.Skip(5).First().User.LastName" />
+                                    </a>
+                                }
+                            </div>
+
+                        </div>
+
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    @if (Model.ListingsCount > 0)
+    {
+        <div class="row mb-5">
+            <div class="col-sm-6">
+                <form asp-page="Listings/Index" method="get" class="form--wide form--primary block form form--listing-search">
+                    <div class="form_fields">
+                        <div class="form_field form_field--search">
+                            <input type="search" name="searchStr" value="" placeholder="Keywords" maxlength="256" class="field field--search">
+                        </div>
+                    </div>
+                    <div class="form_footer">
+                        <button type="submit" class="form_button btn btn-primary field field--submit">
+                            <span>Search</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    @if (Model.ListingCategories.Count() > 0)
+    {
+        <div class="row mb-3 listing-categories grid block">
+            @foreach (var categoryItem in Model.ListingCategoryItems.OrderByDescending(x => x.Value).Take(8))
+            {
+                foreach (var item in Model.ListingCategories.Where(x => x.Id == categoryItem.Key))
+                {
+                    <div class="grid_item col-sm-3">
+                        <article class="listing-category listing-category--view-block">
+                            <header class="listing-category_header">
+                                @if (item.CategoryIcon != null)
+                                {
+                                    <div class="listing-category_icon">
+                                        <a asp-page="/Listings/Index" asp-route-category="@item.CategoryName">
+                                            <i class="icon @item.CategoryIcon"></i>
+                                        </a>
+                                    </div>
+                                }
+                            </header>
+                            <div class="listing-category_content">
+                                <h4 class="listing-category_name">
+                                    <a asp-page="/Listings/Index" asp-route-category="@item.CategoryName" class="link">@item.CategoryName</a>
+                                </h4>
+                                <div class="listing-category_description">@item.CategoryDescription</div>
+                                <div class="listing-category_details listing-category_details--primary">
+                                    <div class="listing-category_item-count listing-category_count">@categoryItem.Value Listings</div>
+                                    <a asp-page="/Listings/Index" asp-route-category="@item.CategoryName" class="listing-category_link">
+                                        <i class="icon fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                }
+            }
+        </div>
+    }
+
+    @if (Model.Experts.Count() > 0)
+    {
+        <div class="mb-3">
+            <h2 class="content-title">Top Experts</h2>
+            <p class="content-subtitle">Our most trusted and skilled experts.</p>
+
+            <div data-component="slider" class="vendors--slider alignfull vendors block grid" data-type="carousel">
+                <div class="row @expertSlider" id="vendor-slick-slider">
+                    @foreach (var item in Model.Experts)
+                    {
+                        <div class="grid_item col-sm-6">
+                            <article class="vendor vendor--view-block">
+                                <header class="vendor_header">
+                                    <div class="vendor_image">
+                                        <a asp-page="/Experts/View" asp-route-id="@item.User.UserName">
+                                            <img src="~/uploadfiles/profiles/@(item.User.ProfilePicture?? "user-square.svg")" alt="@item.User.FirstName @item.User.LastName" loading="lazy">
+                                        </a>
+                                    </div>
+                                </header>
+                                <div class="vendor_content">
+                                    <h4 class="vendor_name">
+                                        <a asp-page="/Experts/View" asp-route-id="@item.User.UserName" class="link">@item.User.FirstName @item.User.LastName</a>
+                                        @if (item.User.EmailConfirmed)
+                                        {
+                                            <i class="vendor_verified-badge icon fas fa-check-circle" title="Verified"></i>
+                                        }
+                                    </h4>
+                                    <div class="vendor_details vendor_details--primary">
+                                        @if (item.AverageRating != null)
+                                        {
+                                            <div class="vendor_rating rating rating--large">
+                                                <div class="rating_bar">
+                                                    <span class="progressbar"></span>
+                                                </div>
+                                                <div class="rating_details">
+                                                    <span class="rating_value">
+                                                        <i class="fas fa-star"></i>
+                                                        <span class="review_rating">
+                                                            @item.AverageRating
+                                                        </span>
+                                                    </span>
+                                                    <span class="rating_count">(@item.CountAllRatings)</span>
+                                                </div>
+                                            </div>
+                                        }
+                                        <time class="vendor_registered-date vendor_date meta" datetime="@item.User.RegistrationDate">
+                                            <span class="d-none registration_date">@item.User.RegistrationDate</span>
+                                            <span class="datetime">Member since </span>
+                                        </time>
+                                    </div>
+                                    <div class="vendor_attributes vendor_attributes--secondary">
+                                        <div class="vendor_attribute vendor_attribute--availability">
+                                            <i class="icon fas fa-fw fa-clock"></i>
+                                            <span>@item.Availability</span>
+                                        </div>
+                                        <div class="vendor_attribute vendor_attribute--experience">
+                                            <i class="icon fas fa-fw fa-poll"></i>
+                                            <span>@item.Experience</span>
+                                        </div>
+                                    </div>
+                                    <div class="vendor_attributes vendor_attributes--secondary">
+                                        <div class="vendor_attribute vendor_attribute--email">
+                                            <a href="mailto:@item.User.Email" class="link">
+                                                <i class="icon fa fa-envelope"></i>
+                                                <span>@item.User.Email</span>
+                                            </a>
+                                        </div>
+                                        @if (item.User.PhoneNumber != null)
+                                        {
+                                            <div class="vendor_attribute vendor_attribute--tel">
+                                                <a href="tel:@item.User.PhoneNumber" class="link">
+                                                    <i class="fa-solid fa-phone"></i>
+                                                    <span>@item.User.PhoneNumber</span>
+                                                </a>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="vendor_attributes vendor_attributes--secondary">
+                                        <div class="vendor_attribute section tagcloud">
+                                            @{
+                                                List<string> tags = item.Tags.Split(',').ToList();
+                                            }
+                                            @foreach (var tag in tags)
+                                            {
+                                                <a asp-page="/Experts/Index" asp-route-tags="@tag" class="tag-cloud-link">@tag</a>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <footer class="vendor_footer">
+                                    <div class="block vendor_attributes vendor_attributes--primary" data-block="vendor_attributes_primary">
+                                        <div class="vendor_attribute vendor_attribute--hourly-rate">@item.HourlyRate€ / hr</div>
+                                    </div>
+                                    <div class="vendor_actions vendor_actions--primary">
+                                        @if (SignInManager.IsSignedIn(User))
+                                        {
+                                            if (!UserManager.GetUserId(User).Equals(item.Id))
+                                            {
+                                                <a data-toggle="modal" data-target="#messageModal" onclick="setMessageValues('Send Message', null, '@item.Id');" title="Send Message" class="vendor_action vendor_action--message">
+                                                    <i class="icon fas fa-comment"></i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a asp-area="Identity" asp-page="/Account/Manage/Index" class="listing_action listing_action--edit link">
+                                                    <i class="icon fas fa-edit"></i>
+                                                    <span>Edit Profile</span>
+                                                </a>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <a asp-area="Identity" asp-page="/Account/Login" asp-route-ReturnUrl="/Index" title="Send Message" class="vendor_action vendor_action--message">
+                                                <i class="icon fas fa-comment"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </footer>
+                            </article>
+                        </div>
+
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+
+</div>
+
+<partial name="_Message" model="Model.Message" />
+
+<partial name="_DeleteModal" />

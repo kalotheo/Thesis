@@ -1,0 +1,125 @@
+﻿@page
+@model Thesis.Pages.Requests.EditModel
+@using Thesis.Areas.Identity.Pages.Account.Manage
+@{
+    ViewData["Title"] = "Edit " + Model.request.Title;
+    ViewData["ActivePage"] = ManageNavPages.Requests;
+}
+<h1 class="page_title">@ViewData["Title"]</h1>
+<div class="page_topbar page_topbar--separate">
+    <nav class="menu--tabbed menu menu--listing-manage">
+        <ul class="nav nav-tabs nav-justified" id="ex1" role="tablist">
+            <li class="menu_item menu_item--listing-view">
+                <a asp-page="View" asp-route-id="@Model.request.Id" asp-fragment="description">Description</a>
+            </li>
+            @if (Model.request.RequestOffers.Count() > 0)
+            {
+                <li class="menu_item menu_item--listing-offers">
+                    <a asp-page="View" asp-route-id="@Model.request.Id" asp-fragment="offers">Offers</a>
+                </li>
+            }
+            <li class="menu_item menu_item--listing-edit menu_item--current current-menu-item">
+                <a asp-page="Edit" asp-route-id="@Model.request.Id" class="listing_action listing_action--edit link">
+                    <i class="icon fas fa-edit"></i>
+                    <span>Edit Request</span>
+                </a>
+            </li>
+            <li class="menu_item menu_item--listing-delete">
+                <button data-toggle="modal" data-target="#deleteModal" class="listing_action listing_action--delete link" onclick="setDeleteValues('Delete Request', 'Are you sure you want to delete this request?', '@Model.request.Id');">
+                    <i class="icon fas fa-times"></i>
+                    <span>Delete Request</span>
+                </button>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<form method="post" id="editForm" enctype="multipart/form-data" class="form form--listing-submit" asp-route-id="@Model.request.Id">
+    <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+    <div class="form_fields">
+        <input type="hidden" asp-for="request.UserId" value="@Model.request.UserId" />
+
+        <div class="form_field form_field--attachment-upload">
+            <label asp-for="FileUpload.Files" class="field_label form_label"></label>
+            <div class="field field--attachment-upload input-field">
+                <div class="input-images-2"></div>
+                <input type="hidden" asp-for="request.Images" id="uploadedFiles" />
+            </div>
+        </div>
+
+        <div class="form_field form_field--text">
+            <label asp-for="request.Title" class="field_label form_label"></label>
+            <input asp-for="request.Title" class="form-control" />
+            <span asp-validation-for="request.Title" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--number">
+            <label asp-for="request.Salary" class="field_label form_label"></label>
+            <input asp-for="request.Salary" min="1" class="form-control" type="number" />
+            <span asp-validation-for="request.Salary" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--dateStart">
+            <label asp-for="request.DateStart" class="field_label form_label"></label>
+            <input asp-for="request.DateStart" id="start" class="form-control" />
+            <span asp-validation-for="request.DateStart" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--dateEnd">
+            <label asp-for="request.DateEnd" class="field_label form_label"></label>
+            <input asp-for="request.DateEnd" id="end" class="form-control" />
+            <span asp-validation-for="request.DateEnd" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--select">
+            <label asp-for="request.TimeRange" class="field_label form_label"></label>
+            <select asp-for="request.TimeRange" class="form-control" asp-items="@Model.RequestTimeRange">
+            </select>
+            <span asp-validation-for="request.TimeRange" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--textarea">
+            <label asp-for="request.Description" class="field_label form_label"></label>
+            <ejs-richtexteditor id="descriptionRTE" ejs-for="request.Description">
+            </ejs-richtexteditor>
+            <span asp-validation-for="request.Description" id="descriptionMsg" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--tags">
+            <label asp-for="request.Tags" class="field_label form_label"></label>
+            <input id="multidatalist" list="tags-list" asp-for="request.Tags" class="form-control" multiple />
+            <datalist id="tags-list">
+                @foreach (var item in Model.TagsList)
+                {
+                    <option value="@item">@item</option>
+                }
+            </datalist>
+            <span asp-validation-for="request.Tags" id="tagsMsg" class="text-danger"></span>
+        </div>
+
+        <div class="form_footer">
+            <input type="submit" value="Save Changes" class="btn btn-primary" />
+        </div>
+    </div>
+</form>
+
+<partial name="_DeleteModal" />
+
+<script>
+    let preloaded = [];
+</script>
+
+@if (Model.request.Images != null)
+{
+    List<string> images = Model.request.Images.Split(',').ToList();
+    for (int i = 0; i < images.Count; i++)
+    {
+        <script>
+            preloaded.push({ id: @i, src: '/uploadfiles/requests/@images[i]' });
+        </script>
+    }
+}
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

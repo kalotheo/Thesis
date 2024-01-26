@@ -1,0 +1,133 @@
+﻿@page
+@model Thesis.Pages.CulturalActivities.CreateModel
+@using Thesis.Areas.Identity.Pages.Account.Manage
+@{
+    ViewData["Title"] = "Create New Cultural Activity";
+    ViewData["ActivePage"] = ManageNavPages.CreateCulturalActivity;
+    Html.AntiForgeryToken();
+}
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+<h1 class="page_title">@ViewData["Title"]</h1>
+<form method="post" enctype="multipart/form-data" class="form form--listing-submit">
+    <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+    <div class="form_fields">
+
+        <div class="form_field form_field--select">
+            <label asp-for="CulturalActivity.CategoryId" class="field_label form_label"></label>
+            <select asp-for="CulturalActivity.CategoryId" id="category" class="form-control" asp-items="@Model.CulturalActivityCategory" onchange="document.location.href = '?category=' + this.value">
+            </select>
+            <span asp-validation-for="CulturalActivity.CategoryId" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--select">
+            <label asp-for="CulturalActivity.SubcategoryId" class="field_label form_label"></label>
+            <select asp-for="CulturalActivity.SubcategoryId" class="form-control" asp-items="@Model.CulturalActivitySubCategory">
+            </select>
+            <span asp-validation-for="CulturalActivity.SubcategoryId" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--attachment-upload">
+            <label asp-for="FileUpload.Files" class="field_label form_label"></label>
+            <div class="input-images-1"></div>
+        </div>
+
+        <div class="form_field form_field--text">
+            <label asp-for="CulturalActivity.Title" class="field_label form_label"></label>
+            <input asp-for="CulturalActivity.Title" class="form-control" />
+            <span asp-validation-for="CulturalActivity.Title" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--dateStart">
+            <label asp-for="CulturalActivity.DateStart" class="field_label form_label"></label>
+            <input asp-for="CulturalActivity.DateStart" id="start" class="form-control" />
+            <span asp-validation-for="CulturalActivity.DateStart" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--dateEnd">
+            <label asp-for="CulturalActivity.DateEnd" class="field_label form_label"></label>
+            <input asp-for="CulturalActivity.DateEnd" id="end" class="form-control" />
+            <span asp-validation-for="CulturalActivity.DateEnd" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--place">
+            <label asp-for="CulturalActivity.Place" class="field_label form_label"></label>
+            <input asp-for="CulturalActivity.Place" class="form-control" />
+            <span asp-validation-for="CulturalActivity.Place" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--description">
+            <label asp-for="CulturalActivity.Description" class="field_label form_label"></label>
+            <ejs-richtexteditor id="descriptionRTE" ejs-for="CulturalActivity.Description" toolbarClick="toolbarClick" imageUploadSuccess="onImageUploadSuccess">
+                <e-richtexteditor-insertimagesettings saveUrl="?handler=Save" path="/uploadfiles/culturalActivities/"></e-richtexteditor-insertimagesettings>
+            </ejs-richtexteditor>
+            <span asp-validation-for="CulturalActivity.Description" id="descriptionMsg" class="text-danger"></span>
+        </div>
+
+        <div class="form_field form_field--cast">
+            <label asp-for="CulturalActivity.Cast" class="field_label form_label"></label>
+            <ejs-richtexteditor id="castRTE" ejs-for="CulturalActivity.Cast" toolbarClick="toolbarClick" imageUploadSuccess="onImageUploadSuccess">
+                <e-richtexteditor-insertimagesettings saveUrl="?handler=Save" path="/uploadfiles/culturalActivities/"></e-richtexteditor-insertimagesettings>
+            </ejs-richtexteditor>
+        </div>
+
+        <div class="form_field form_field--media">
+            <label asp-for="CulturalActivity.Media" class="field_label form_label"></label>
+            <ejs-richtexteditor id="mediaRTE" ejs-for="CulturalActivity.Media" toolbarClick="toolbarClick" imageUploadSuccess="onImageUploadSuccess">
+                <e-richtexteditor-insertimagesettings saveUrl="?handler=Save" path="/uploadfiles/culturalActivities/"></e-richtexteditor-insertimagesettings>
+            </ejs-richtexteditor>
+        </div>
+
+        <div class="form_field form_field--tags">
+            <label asp-for="CulturalActivity.Tags" class="field_label form_label"></label>
+            <input id="multidatalist" list="tags-list" asp-for="CulturalActivity.Tags" class="form-control" multiple />
+            <datalist id="tags-list">
+                @foreach (var item in Model.TagsList)
+                {
+                    <option value="@item">@item</option>
+                }
+            </datalist>
+            <span asp-validation-for="CulturalActivity.Tags" id="tagsMsg" class="text-danger"></span>
+        </div>
+
+        <div class="form_footer">
+            <input type="submit" value="Submit Cultural Activity" class="btn btn-primary" />
+        </div>
+
+    </div>
+</form>
+
+<script>
+
+    function toolbarClick(e) {
+        var descriptionRTEToolbarImage = "descriptionRTE_toolbar_Image";
+        var castRTEToolbarImage = "castRTE_toolbar_Image";
+        var mediaRTEToolbarImage = "mediaRTE_toolbar_Image";
+
+        if (e.item.id == descriptionRTEToolbarImage || e.item.id == castRTEToolbarImage || e.item.id == mediaRTEToolbarImage) {
+            var element = document.getElementById('_upload')
+            element.ej2_instances[0].uploading = function upload(args) {
+                args.currentRequest.setRequestHeader('XSRF-TOKEN', document.getElementsByName('_RequestVerificationToken')[0].value);
+            }
+        }
+    }
+
+    function onImageUploadSuccess(args) {
+        if (args.e.currentTarget.getResponseHeader('name') != null) {
+            args.file.name = args.e.currentTarget.getResponseHeader('name');
+            let filename = document.querySelectorAll(".e-file-name")[0];
+            filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
+            filename.title = args.file.name;
+        }
+    }
+</script>
+
+@if (Model.CurrentCategory != null)
+{
+    <script>
+        document.getElementById('category').value = '@Model.CurrentCategory';
+    </script>
+}
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

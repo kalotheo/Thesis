@@ -1,0 +1,44 @@
+﻿@using Thesis.Areas.Identity.Pages.Account.Manage
+<ul id="menu-header">
+    <li class="@ManageNavPages.IndexNavClass(ViewContext)">
+        <a asp-page="/Index">Home</a>
+    </li>
+    @{
+        var cultActivitiesMenu = User.IsInRole("Admin") ? "menu-item-has-children menu-item-cultural-activities" : "";
+        var listingsMenu = User.IsInRole("Expert") ? "menu-item-has-children menu-item-listings" : "";
+    }
+    <li class="@cultActivitiesMenu @ManageNavPages.CulturalActivitiesNavClass(ViewContext) @ManageNavPages.CreateCulturalActivityNavClass(ViewContext)">
+        <a asp-page="/CulturalActivities/Index">Cultural Activities</a>
+        @if (User.IsInRole("Admin"))
+        {
+            <ul class="sub-menu menu--pages">
+                <li class="@ManageNavPages.CreateCulturalActivityNavClass(ViewContext)">
+                    <a asp-page="/CulturalActivities/Create">Create New Cultural Activity</a>
+                </li>
+            </ul>
+        }
+    </li>
+    <li class="@ManageNavPages.ExpertsNavClass(ViewContext)">
+        <a asp-page="/Experts/Index">Experts</a>
+    </li>
+    <li class="@listingsMenu @ManageNavPages.ListingsNavClass(ViewContext) @ManageNavPages.CreateListingNavClass(ViewContext)">
+        <a asp-page="/Listings/Index">Listings</a>
+        @if (User.IsInRole("Expert"))
+        {
+            <ul class="sub-menu menu--pages">
+                <li class="@ManageNavPages.CreateListingNavClass(ViewContext)">
+                    <a asp-page="/Listings/Create">Create New Listing</a>
+                </li>
+            </ul>
+        }
+    </li>
+    <li class="menu-item-has-children menu-item-requests @ManageNavPages.RequestsNavClass(ViewContext) @ManageNavPages.CreateRequestNavClass(ViewContext)">
+        <a asp-page="/Requests/Index">Requests</a>
+        <ul class="sub-menu menu--pages">
+            <li class="@ManageNavPages.CreateRequestNavClass(ViewContext)">
+                <a asp-page="/Requests/Create">Create New Request</a>
+            </li>
+        </ul>
+    </li>
+    <partial name="_LoginPartial" />
+</ul>

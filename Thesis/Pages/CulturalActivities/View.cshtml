@@ -1,0 +1,471 @@
+﻿@page
+@model Thesis.Pages.CulturalActivities.ViewModel
+@using Microsoft.AspNetCore.Identity
+@using Thesis.Model
+@using Thesis.Areas.Identity.Pages.Account.Manage
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@{
+    ViewData["Title"] = Model.CulturalActivity.Title;
+    ViewData["ActivePage"] = ManageNavPages.CulturalActivities;
+    ViewData["CulturalActivityId"] = Model.CulturalActivity.Id;
+    if (SignInManager.IsSignedIn(User))
+    {
+        if (Model.ExistingReview.Any(x => x.CulturalActivityId == Model.CulturalActivity.Id))
+        {
+            ViewData["reviewPageHandler"] = "EditReview";
+        }
+        else
+        {
+            ViewData["reviewPageHandler"] = "Review";
+        }
+    }
+}
+
+<div class="listing listing--view-page">
+    <div class="page_content">
+        <partial name="_StatusMessage" model="Model.StatusMessage" />
+        <h1 class="listing_title">@ViewData["Title"]</h1>
+        <div class="listing_details listing_details--primary">
+            <div class="listing_categories listing_category">
+                @if (Model.CulturalActivity.CategoryId != null)
+                {
+                    <a asp-page="/CulturalActivities/Index" asp-route-category="@Model.CulturalActivity.CulturalActivityMainCategory.CategoryName" class="link">@Model.CulturalActivity.CulturalActivityMainCategory.CategoryName</a>
+                    @if (Model.CulturalActivity.SubcategoryId != null)
+                    {
+                        <span class="mx-1">|</span>
+                        <a asp-page="/CulturalActivities/Index" asp-route-category="@Model.CulturalActivity.CulturalActivityMainCategory.CategoryName" asp-route-subcategory="@Model.CulturalActivity.CulturalActivitySubcategory.CategoryName" class="link">@Model.CulturalActivity.CulturalActivitySubcategory.CategoryName</a>
+                    }
+                }
+            </div>
+            @if (Model.CulturalActivity.AverageRating != null)
+            {
+                <div class="listing_rating rating">
+                    <div class="rating_bar">
+                        <span class="progressbar"></span>
+                    </div>
+                    <div class="rating_details">
+                        <span class="rating_value">
+                            <i class="fas fa-star"></i>
+                            <span class="review_rating">@Model.CulturalActivity.AverageRating</span>
+                        </span>
+                        <span class="rating_count">(@Model.CulturalActivity.CountAllRatings)</span>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="listing_attributes listing_attributes--secondary">
+            @if (Model.CulturalActivity.DateStart != null && Model.CulturalActivity.DateEnd != null)
+            {
+                <div class="listing_attribute listing_attribute--availability">
+                    <i class="icon fas fa-fw fa-calendar"></i>
+                    @{
+                        TimeSpan span = Model.CulturalActivity.DateEnd.Value.Subtract(Model.CulturalActivity.DateStart.Value);
+                    }
+                    @if (span.Days > 0)
+                    {
+                        <span>@Model.CulturalActivity.DateStart.Value.ToShortDateString() - @Model.CulturalActivity.DateEnd.Value.ToShortDateString()</span>
+                    }
+                    else
+                    {
+                        <span>@Model.CulturalActivity.DateStart.Value.ToShortDateString()</span>
+                    }
+                </div>
+            }
+            <div class="listing_attribute listing_attribute--warranty">
+                <i class="icon fas fa-fw fa-location-pin"></i>
+                @Model.CulturalActivity.Place
+            </div>
+        </div>
+        <div class="page_topbar page_topbar--separate">
+            <nav class="menu--tabbed menu menu--listing-manage">
+                <ul class="nav nav-tabs nav-justified" id="ex1">
+                    @if (Model.CulturalActivity.Description != null)
+                    {
+                        <li id="menu-description" class="menu_item menu_item--listing-description">
+                            <a href="#description">Description</a>
+                        </li>
+                    }
+                    @if (Model.CulturalActivity.Cast != null)
+                    {
+                        <li id="menu-cast" class="menu_item menu_item--listing-cast">
+                            <a href="#cast">Cast</a>
+                        </li>
+                    }
+                    @if (Model.CulturalActivity.Media != null)
+                    {
+                        <li id="menu-media" class="menu_item menu_item--listing-media" role="presentation">
+                            <a href="#media">Media</a>
+                        </li>
+                    }
+                    @if (Model.CulturalActivity.CulturalActivityReviews.Count() > 0)
+                    {
+                        <li id="menu-reviews" class="menu_item menu_item--listing-reviews" role="presentation">
+                            <a href="#reviews">Reviews</a>
+                        </li>
+                    }
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="menu_item menu_item--listing-edit">
+                            <a asp-page="/CulturalActivities/Edit" asp-route-id="@Model.CulturalActivity.Id" asp-route-category="@Model.CulturalActivity.CategoryId" class="listing_action listing_action--edit link">
+                                <i class="icon fas fa-edit"></i>
+                                <span>Edit</span>
+                            </a>
+                        </li>
+
+                        <li class="menu_item menu_item--listing-delete">
+                            <button data-toggle="modal" data-target="#deleteModal" class="listing_action listing_action--delete link" onclick="setDeleteValues('Delete Cultural Activity', 'Are you sure you want to delete this cultural activity?', '@Model.CulturalActivity.Id');">
+                                <i class="icon fas fa-times"></i>
+                                <span>Delete</span>
+                            </button>
+                        </li>
+                    }
+                </ul>
+            </nav>
+            <div class="listing_actions listing_actions--secondary">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    if (Model.ExistingReview.Any(x => x.CulturalActivityId == Model.CulturalActivity.Id))
+                    {
+                        foreach (var review in Model.ExistingReview)
+                        {
+                            <button class="review_action review_action--edit link" data-toggle="modal" data-target="#reviewModal" onclick="setReviewValues('Edit Review', @Model.CulturalActivity.Id, @review.Id, @review.Rating, '@Html.Encode(review.ReviewMessage)');">
+                                <i class="icon fas fa-edit"></i>
+                                <span>Edit Review</span>
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <a data-toggle="modal" data-target="#reviewModal" class="listing_action listing_action--review link" onclick="setReviewValues('Write a Review', @Model.CulturalActivity.Id, null, null, null);">
+                            <i class="icon fas fa-star"></i>
+                            <span>Write a Review</span>
+                        </a>
+                    }
+                    if (Model.ExistingFavourite.Any(x => x.CulturalActivityId == Model.CulturalActivity.Id))
+                    {
+                        foreach (var favourite in Model.ExistingFavourite)
+                        {
+                            if (Model.CulturalActivity.Id.Equals(favourite.CulturalActivityId))
+                            {
+                                <form method="post" asp-page-handler="DeleteFavourite" asp-route-id="@favourite.Id" asp-route-id2="@Model.CulturalActivity.Id">
+                                    <button class="listing_action listing_action--favorite link" data-state="active">
+                                        <i class="icon fas fa-heart"></i>
+                                        <span>Remove from Favourites</span>
+                                    </button>
+                                </form>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <form method="post" asp-page-handler="AddFavourite" asp-route-id="@Model.CulturalActivity.Id">
+                            <input type="hidden" asp-for="Favourite.IdUser" value="@UserManager.GetUserId(User)" />
+                            <input type="hidden" asp-for="Favourite.CulturalActivityId" value="@Model.CulturalActivity.Id" />
+                            <button class="listing_action listing_action--favorite link">
+                                <i class="icon fas fa-heart"></i>
+                                <span>Add to Favourites</span>
+                            </button>
+                        </form>
+                    }
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login" asp-route-ReturnUrl="/CulturalActivities/View?id=@Model.CulturalActivity.Id" class="listing_action listing_action--review link">
+                        <i class="icon fas fa-star"></i>
+                        <span>Write a Review</span>
+                    </a>
+                    <a asp-area="Identity" asp-page="/Account/Login" asp-route-ReturnUrl="/CulturalActivities/View?id=@Model.CulturalActivity.Id" class="listing_action listing_action--favorite link">
+                        <i class="icon fas fa-heart"></i>
+                        <span>Add to Favourites</span>
+                    </a>
+                }
+            </div>
+        </div>
+
+        @if (Model.CulturalActivity.Images != null)
+        {
+            List<string> images = Model.CulturalActivity.Images.Split(',').ToList();
+            var firstItem = images.First();
+
+            <div id="myCarousel" class="listing_images carousel slide" data-ride="carousel">
+
+                <!-- Wrapper for slides -->
+                <div class="carousel-inner">
+                    @foreach (var image in images)
+                    {
+                        var carouselItemActive = image.Equals(firstItem) ? "active" : "";
+                        <div class="carousel-item @carouselItemActive">
+                            <img src="~/uploadfiles/culturalActivities/@image" alt="@Model.CulturalActivity.Title" loading="lazy">
+                        </div>
+                    }
+                </div>
+
+                @if (images.Count() > 1)
+                {
+                    <!-- Indicators -->
+                    <ol class="carousel-indicators">
+                        @foreach (var image in images)
+                        {
+                            var carouselItemActive = image.Equals(firstItem) ? "active" : "";
+                            <li data-target="#myCarousel" class="@carouselItemActive"></li>
+                        }
+                    </ol>
+
+                    <!-- Left and right controls -->
+                    <a class="carousel-control-prev" href="#myCarousel" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#myCarousel" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                }
+
+            </div>
+        }
+
+        <div class="tab-content">
+
+            <div id="description" class="tab-pane fade">
+                <p>@Html.Raw(Model.CulturalActivity.Description)</p>
+            </div>
+
+            <div id="cast" class="tab-pane fade">
+                <p>@Html.Raw(Model.CulturalActivity.Cast)</p>
+            </div>
+
+            <div id="media" class="tab-pane fade">
+                <p>@Html.Raw(Model.CulturalActivity.Media)</p>
+            </div>
+
+        </div>
+
+        <div class="listing_tags section tagcloud">
+            @foreach (var tag in Model.tags)
+            {
+                <a asp-page="Index" asp-route-tags="@tag" class="tag-cloud-link">@tag</a>
+            }
+        </div>
+
+        @if (Model.CulturalActivity.CulturalActivityReviews.Count() > 0)
+        {
+            <div id="reviews">
+                <div class="section">
+                    <h2 class="section_title">Reviews</h2>
+                    <div class="reviews block grid paginated-grid">
+                        <div class="row">
+                            @foreach (var item in Model.CulturalActivity.CulturalActivityReviews.OrderByDescending(x => x.ReviewDate))
+                            {
+                                <div class="grid_item col-12">
+                                    <div class="review review--view-block">
+                                        <header class="review_header">
+                                            <div class="review_image">
+                                                <img src="~/uploadfiles/profiles/@(item.User.ProfilePicture ?? "user-square.svg")" class="avatar avatar-150 photo" height="150" width="150" alt="@item.User.FirstName @item.User.LastName" loading="lazy">
+                                            </div>
+                                            <div class="review_summary">
+                                                <div class="review_author">@item.User.FirstName @item.User.LastName</div>
+                                                <div class="review_details">
+                                                    <time class="review_created-date review_date meta" datetime="@item.ReviewDate">@item.ReviewDate.ToShortDateString()</time>
+                                                    <div class="rating">
+                                                        <div class="rating_bar">
+                                                            <span class="progressbar"></span>
+                                                        </div>
+                                                        <div class="rating_details">
+                                                            <span class="rating_value">
+                                                                <i class="fas fa-star"></i>
+                                                                <span class="review_rating">@item.Rating</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </header>
+                                        <div class="review_content">
+                                            <div class="review_text">
+                                                <p class="longtext">@item.ReviewMessage</p>
+                                            </div>
+                                        </div>
+                                        @if (SignInManager.IsSignedIn(User))
+                                        {
+                                            if (Model.ExistingReview.Any(x => x.Id == item.Id))
+                                            {
+                                                foreach (var review in Model.ExistingReview)
+                                                {
+                                                    <footer class="review_footer">
+                                                        <div class="review_attributes review_attributes--primary"></div>
+                                                        <div class="review_actions review_actions--primary">
+                                                            <button class="review_action review_action--edit link" data-toggle="modal" data-target="#reviewModal" onclick="setReviewValues('Edit Review', @Model.CulturalActivity.Id, @review.Id, @review.Rating, '@Html.Encode(review.ReviewMessage)');">
+                                                                <i class="icon fas fa-edit"></i>
+                                                                <span>Edit Review</span>
+                                                            </button>
+                                                            <form method="post" asp-page-handler="DeleteReview" asp-route-id="@review.Id">
+                                                                <button class="review_action review_action--delete link">
+                                                                    <i class="icon fas fa-times"></i>
+                                                                    <span>Delete Review</span>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </footer>
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (Model.CulturalActivities.Count() > 0)
+{
+    <div class="page_footer">
+        <div class="section">
+            <h2 class="section_title">Related Cultural Activities</h2>
+            <div class="events block grid load-more-grid">
+                <div class="row">
+                    @foreach (var item in Model.CulturalActivities)
+                    {
+                        <div class="grid_item col-sm-4">
+                            <article class="event--view-block">
+                                @if (item.Images != null)
+                                {
+                                    <header class="event_header">
+                                        <div class="event_image">
+                                            <a asp-page="View" asp-route-id="@item.Id">
+                                                @{
+                                                    List<string> images = item.Images.Split(',').ToList();
+                                                }
+                                                <img src="~/uploadfiles/culturalActivities/@images.First()" alt="@item.Title" loading="lazy">
+                                            </a>
+                                        </div>
+                                    </header>
+                                }
+                                <div class="event_content">
+                                    <div class="event_primary">
+                                        @if (item.DateStart != null && item.DateEnd != null)
+                                        {
+                                            <time class="event_attribute event_attribute--date">
+                                                <i class="fas fa-fw fa-calendar"></i>
+                                                @{
+                                                    TimeSpan span2 = item.DateEnd.Value.Subtract(item.DateStart.Value);
+                                                }
+                                                @if (span2.Days > 0)
+                                                {
+                                                    <span>@item.DateStart.Value.ToShortDateString() - @item.DateEnd.Value.ToShortDateString()</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>@item.DateStart.Value.ToShortDateString()</span>
+                                                }
+                                            </time>
+                                        }
+                                        @if (item.AverageRating != null)
+                                        {
+                                            <div class="event_rating rating rating--large">
+                                                <div class="rating_bar">
+                                                    <span class="progressbar"></span>
+                                                </div>
+                                                <div class="rating_details">
+                                                    <span class="rating_value">
+                                                        <i class="fas fa-star"></i>
+                                                        <span class="review_rating">
+                                                            @item.AverageRating
+                                                        </span>
+                                                    </span>
+                                                    <span class="rating_count">(@item.CountAllRatings)</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                    <h4 class="event_title">
+                                        <a asp-page="View" asp-route-id="@item.Id">@item.Title</a>
+                                    </h4>
+                                    @if (SignInManager.IsSignedIn(User))
+                                    {
+                                        if (Model.ExistingFavourite.Any(x => x.CulturalActivityId == item.Id))
+                                        {
+                                            foreach (var favourite in Model.ExistingFavourite)
+                                            {
+                                                if (item.Id.Equals(favourite.CulturalActivityId))
+                                                {
+                                                    <form method="post" asp-page-handler="DeleteFavourite" asp-route-id="@favourite.Id" asp-route-id2="@Model.CulturalActivity.Id">
+                                                        <button class="listing_action listing_action--favorite" data-state="active" title="Remove from Favourites">
+                                                            <i class="icon fas fa-heart"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <form method="post" asp-page-handler="AddFavourite" asp-route-id="@Model.CulturalActivity.Id">
+                                                <input type="hidden" asp-for="Favourite.IdUser" value="@UserManager.GetUserId(User)" />
+                                                <input type="hidden" asp-for="Favourite.CulturalActivityId" value="@item.Id" />
+                                                <button class="listing_action listing_action--favorite" title="Add to Favourites">
+                                                    <i class="icon fas fa-heart"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    }
+
+                                    else
+                                    {
+                                        <a asp-area="Identity" asp-page="/Account/Login" asp-route-ReturnUrl="/CulturalActivities/View?id=@Model.CulturalActivity.Id" title="Add to Favourites" class="listing_action listing_action--favorite">
+                                            <i class="icon fas fa-heart"></i>
+                                        </a>
+                                    }
+                                    <div class="event-category meta">
+                                        @if (item.CategoryId != null)
+                                        {
+                                            <a asp-page="/CulturalActivities/Index" asp-route-category="@item.CulturalActivityMainCategory.CategoryName">@item.CulturalActivityMainCategory.CategoryName</a>
+                                            @if (item.SubcategoryId != null)
+                                            {
+                                                <span> | </span>
+                                                <a asp-page="/CulturalActivities/Index" asp-route-category="@item.CulturalActivityMainCategory.CategoryName" asp-route-subcategory="@item.CulturalActivitySubcategory.CategoryName">@item.CulturalActivitySubcategory.CategoryName</a>
+                                            }
+                                        }
+                                    </div>
+                                    <div class="event_attribute event_attribute--place">
+                                        <i class="fas fa-fw fa-location-pin"></i>
+                                        <span>@item.Place</span>
+                                    </div>
+                                </div>
+                            </article>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <footer class="listing_footer_secondary event_footer_secondary">
+                                    <div class="listing_attributes listing_attributes--primary"></div>
+                                    <div class="listing_actions listing_actions--primary">
+                                        <a asp-page="/CulturalActivities/Edit" asp-route-id="@item.Id" asp-route-category="@item.CategoryId" class="listing_action listing_action--edit link">
+                                            <i class="icon fas fa-edit"></i>
+                                            <span>Edit</span>
+                                        </a>
+                                        <button data-toggle="modal" data-target="#deleteModal" class="listing_action listing_action--delete link" onclick="setDeleteValues('Delete Cultural Activity', 'Are you sure you want to delete this cultural activity?', '@item.Id');">
+                                            <i class="icon fas fa-times"></i>
+                                            <span>Delete</span>
+                                        </button>
+                                    </div>
+                                </footer>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<partial name="_ReviewCulturalActivity" model="Model.Review" view-data="ViewData" />
+
+<partial name="_DeleteModal" view-data="ViewData" />
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

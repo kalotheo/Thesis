@@ -1,0 +1,132 @@
+﻿@page
+@model Thesis.Areas.Identity.Pages.Account.Manage.CulturalActivitiesCategoriesModel
+@{
+    ViewData["Title"] = "Cultural Activities Categories";
+    ViewData["ActivePage"] = ManageNavPages.CulturalActivitiesCategories;
+}
+
+<div class="page-manage-content">
+    <h1 class="page_title">@ViewData["Title"]</h1>
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
+
+    <form method="post" enctype="multipart/form-data" class="form form--listing-submit mb-5">
+        <div class="text-danger" asp-validation-summary="ModelOnly"></div>
+        <div class="form_fields">
+
+            <div class="form_field form_field--select">
+                <label asp-for="CulturalActivityCategory.CategoryParent" class="field_label form_label"></label>
+                <select asp-for="CulturalActivityCategory.CategoryParent" class="form-control" asp-items="@Model.CulturalActivityParentCategories">
+                </select>
+            </div>
+
+            <div class="form_field form_field--text">
+                <label asp-for="CulturalActivityCategory.CategoryName" class="field_label form_label"></label>
+                <input asp-for="CulturalActivityCategory.CategoryName" class="form-control" />
+                <span asp-validation-for="CulturalActivityCategory.CategoryName" class="text-danger"></span>
+            </div>
+
+            <div class="form_field form_field--text">
+                <label asp-for="CulturalActivityCategory.CategoryDescription" class="field_label form_label"></label>
+                <textarea asp-for="CulturalActivityCategory.CategoryDescription" class="form-control textarea-min-height"></textarea>
+            </div>
+
+            <div class="form_field form_field--text">
+                <label asp-for="CulturalActivityCategory.CategoryIcon" class="field_label form_label"></label>
+                <p class="category-icon-instructions">
+                    Head over to <a href="https://fontawesome.com/search" class="manage-link" target="_blank">Font awesome icons</a>
+                    search for the suitable icon, copy only the class name and paste it in the field.
+                    <br />For example "fa-solid fa-music".
+                </p>
+                <input asp-for="CulturalActivityCategory.CategoryIcon" class="form-control" />
+            </div>
+
+            <div class="form_footer">
+                <input type="submit" value="Submit Category" class="btn btn-primary" />
+            </div>
+
+        </div>
+    </form>
+
+    @if (Model.CulturalActivityCategories.Count() > 0)
+    {
+        <table class="table table-striped border">
+            <tr>
+                <th>
+                    Category Parent
+                </th>
+                <th>
+                    Category
+                </th>
+                <th>
+                    Category Description
+                </th>
+                <th>
+                   Category Icon
+                </th>
+                <th colspan="2">
+                    <label>Action</label>
+                </th>
+            </tr>
+            @foreach (var item in Model.CulturalActivityCategories.OrderBy(x => x.CategoryParent))
+            {
+                <tr>
+                    @if (item.CategoryParent != null)
+                    {
+                        <td>
+                            @item.CulturalActivityParent.CategoryName
+                        </td>
+                    }
+                    else
+                    {
+                        <td>-</td>
+                    }
+
+                    <td>
+                        @item.CategoryName
+                    </td>
+                    @if (item.CategoryDescription != null)
+                    {
+                        <td>
+                            @item.CategoryDescription
+                        </td>
+                    }
+                    else
+                    {
+                        <td>-</td>
+                    }
+                    @if (item.CategoryIcon != null)
+                    {
+                        <td>
+                            <i class="@item.CategoryIcon"></i>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>-</td>
+                    }
+
+                    <td>
+                        <a asp-page="CulturalActivitiesCategories" asp-route-id="@item.Id" class="listing_action listing_action--edit link">
+                            <i class="icon fas fa-edit"></i>
+                            <span>Edit</span>
+                        </a>
+                    </td>
+                    <td>
+                        <button data-toggle="modal" data-target="#deleteModal" class="listing_action listing_action--delete link" onclick="setDeleteValues('Delete Cultural Activity Category', 'Are you sure you want to delete this category? All cultural activities with this category will not have any category and subcategories of this category will not have any parent.', '@item.Id');">
+                            <i class="icon fas fa-times"></i>
+                            <span>Delete</span>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+
+</div>
+
+<partial name="_DeleteModal" />
+
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

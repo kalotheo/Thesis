@@ -1,0 +1,190 @@
+﻿@page
+@model Thesis.Areas.Identity.Pages.Account.Manage.FavouriteListingsModel
+@{
+    ViewData["Title"] = "Favourite Listings";
+    ViewData["ActivePage"] = ManageNavPages.FavouriteListings;
+}
+
+<div class="page-manage-content">
+    <h1 class="page_title">@ViewData["Title"]</h1>
+    <partial name="_StatusMessage" model="Model.StatusMessage" />
+    @if (Model.FavouriteListings.Count() > 0)
+    {
+        <div class="page_topbar">
+            <div class="result-count">Showing @Model.FavouriteListings.GetStartRange() - @Model.FavouriteListings.GetEndRange() results of @Model.FavouriteListings.GetTotalCount()</div>
+            <form asp-page="FavouriteListings" class="form--pivot form form--vendor-sort" data-autosubmit="true" method="get" data-component="form">
+                <div class="form_fields">
+                    <div class="form_field form_field--select">
+                        <label class="field_label form_label">
+                            <span>Sort by</span>
+                        </label>
+                        <select id="sortList" name="sortOrder" required="required" class="field field--select form-control" onchange="this.form.submit()">
+                            <option name="@Model.CurrentSort" value="rating_desc">Rating ↓</option>
+                            <option name="@Model.CurrentSort" value="rating_asc">Rating ↑</option>
+                            <option name="@Model.CurrentSort" value="date_desc">Date ↓</option>
+                            <option name="@Model.CurrentSort" value="date_asc">Date ↑</option>
+                            <option name="@Model.CurrentSort" value="name_desc">Name ↓</option>
+                            <option name="@Model.CurrentSort" value="name_asc">Name ↑</option>
+                            <option name="@Model.CurrentSort" value="title_desc">Title ↓</option>
+                            <option name="@Model.CurrentSort" value="title_asc">Title ↑</option>
+                            <option name="@Model.CurrentSort" value="rate_desc">Hourly Rate ↓</option>
+                            <option name="@Model.CurrentSort" value="rate_asc">Hourly Rate ↑</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="listings block grid">
+            @foreach (var item in Model.FavouriteListings)
+            {
+                <div class="grid_item col-12">
+                    <article class="listing listing--view-block">
+                        <header class="listing_header">
+                            <div class="listing_image">
+                                <a asp-page="/Listings/View" asp-route-id="@item.Listing.Id">
+                                    <img src="~/uploadfiles/profiles/@(item.Listing.Expert.User.ProfilePicture ?? "user-square.svg")" alt="@item.Listing.Title" loading="lazy">
+                                </a>
+                            </div>
+                        </header>
+                        <div class="listing_content">
+                            <h4 class="listing_title">
+                                <a asp-page="/Listings/View" asp-route-id="@item.ListingId" class="link">@item.Listing.Title</a>
+                            </h4>
+                            <div class="listing_details listing_details--primary">
+                                <div class="listing_vendor">
+                                    <a asp-page="/Experts/View" asp-route-id="@item.Listing.Expert.User.UserName" class="link">@item.Listing.Expert.User.FirstName @item.Listing.Expert.User.LastName</a>
+                                </div>
+                                @if (item.Listing.CategoryId != null)
+                                {
+                                    <div class="listing_categories listing_category">
+                                        <a asp-page="/Listings/Index" asp-route-category="@item.Listing.ListingCategory.CategoryName" class="link">@item.Listing.ListingCategory.CategoryName</a>
+                                    </div>
+                                }
+                                @if (item.Listing.AverageRating != null)
+                                {
+                                    <div class="listing_rating rating">
+                                        <div class="rating_bar">
+                                            <span class="progressbar"></span>
+                                        </div>
+
+                                        <div class="rating_details">
+                                            <span class="rating_value">
+                                                <i class="fas fa-star"></i>
+                                                <span class="review_rating">
+                                                    @item.Listing.AverageRating
+                                                </span>
+                                            </span>
+                                            <span class="rating_count">(@item.Listing.CountAllRatings)</span>
+                                        </div>
+
+                                    </div>
+                                }
+                            </div>
+                            <div class="listing_attributes listing_attributes--secondary">
+                                <div class="listing_attribute listing_attribute--availability">
+                                    <i class="icon fas fa-fw fa-calendar-check"></i> @item.Listing.Availability
+                                </div>
+                            </div>
+                        </div>
+                        <footer class="listing_footer">
+                            <div class="block listing_attributes listing_attributes--primary" data-block="listing_attributes_primary">
+                                <div class="listing_attribute listing_attribute--hourly-rate">@item.Listing.HourlyRate€ / hr</div>
+                            </div>
+                            <div class="listing_actions listing_actions--primary">
+                                <a data-toggle="modal" data-target="#messageModal" onclick="setMessageValues('Reply to Listing', @item.Listing.Id, '@item.Listing.ExpertId');" title="Reply to Listing" class="listing_action listing_action--message">
+                                    <i class="icon fas fa-comment"></i>
+                                </a>
+                                <form method="post" asp-page-handler="DeleteFavourite" asp-route-id="@item.Id">
+                                    <button class="listing_action listing_action--favorite" data-state="active" title="Remove from Favourites">
+                                        <i class="icon fas fa-heart"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </footer>
+                    </article>
+                </div>
+            }
+        </div>
+
+        @if (Model.FavouriteListings.TotalPages > 1)
+        {
+            <nav class="navigation pagination" aria-label="Posts">
+                <div class="nav-links">
+
+                    @if (Model.FavouriteListings.PageIndex != 1)
+                    {
+                        <a asp-page="FavouriteListings"
+                           asp-route-sortOrder="@Model.CurrentSort"
+                           asp-route-pageIndex="1"
+                           class="first">
+                            First
+                        </a>
+                    }
+
+                    @if (Model.FavouriteListings.HasPreviousPage)
+                    {
+                        <a asp-page="FavouriteListings"
+                           asp-route-sortOrder="@Model.CurrentSort"
+                           asp-route-pageIndex="@(Model.FavouriteListings.PageIndex - 1)"
+                           class="prev">
+                        </a>
+                    }
+
+                    @for (int i = Model.FavouriteListings.PageLeft; i <= Model.FavouriteListings.PageRight; i++)
+                    {
+                        if (i == Model.FavouriteListings.PageIndex)
+                        {
+                            <a onclick="return false" class="active">
+                                @i
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-page="FavouriteListings"
+                               asp-route-sortOrder="@Model.CurrentSort"
+                               asp-route-pageIndex="@i">
+                                @i
+                            </a>
+                        }
+                    }
+
+                    @if (Model.FavouriteListings.HasNextPage)
+                    {
+                        <a asp-page="FavouriteListings"
+                           asp-route-sortOrder="@Model.CurrentSort"
+                           asp-route-pageIndex="@(Model.FavouriteListings.PageIndex + 1)"
+                           class="next">
+                        </a>
+                    }
+
+                    @if (Model.FavouriteListings.PageIndex != Model.FavouriteListings.TotalPages)
+                    {
+                        <a asp-page="FavouriteListings"
+                           asp-route-sortOrder="@Model.CurrentSort"
+                           asp-route-pageIndex="@Model.FavouriteListings.TotalPages"
+                           class="last">
+                            Last
+                        </a>
+                    }
+
+                </div>
+            </nav>
+        }
+    }
+
+    else
+    {
+        <h2>Nothing found</h2>
+        <p>Head over to <a asp-page="/Listings/Index" class="manage-link">Listings</a> and click the heart icon to add a listing to your favourites list!</p>
+    }
+
+</div>
+
+<partial name="_Message" model="Model.Message" view-data="ViewData" />
+
+@if (Model.CurrentSort != null)
+{
+    <script>
+    document.getElementById('sortList').value = '@Model.CurrentSort';
+    </script>
+}

@@ -1,0 +1,150 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Thesis.Model
+@using Thesis.Areas.Identity.Pages.Account.Manage
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <li class="menu-item menu-item--user-account menu-item-has-children parent 
+        @ManageNavPages.ManageNavClass(ViewContext) 
+        @ManageNavPages.CulturalActivitiesCategoriesNavClass(ViewContext) 
+        @ManageNavPages.ListingCategoriesNavClass(ViewContext)
+        @ManageNavPages.UsersNavClass(ViewContext)
+        @ManageNavPages.RecommendedCulturalActivitiesNavClass(ViewContext)
+        @ManageNavPages.FavouriteCulturalActivitiesNavClass(ViewContext)
+        @ManageNavPages.ReviewsCulturalActivitiesNavClass(ViewContext)
+        @ManageNavPages.ManageListingsNavClass(ViewContext)
+        @ManageNavPages.OffersNavClass(ViewContext)
+        @ManageNavPages.MessagesNavClass(ViewContext)
+        @ManageNavPages.ManageRequestsNavClass(ViewContext)
+        @ManageNavPages.FavouriteListingsNavClass(ViewContext)
+        @ManageNavPages.ReviewsListingsNavClass(ViewContext)
+        @ManageNavPages.PersonalDataNavClass(ViewContext)">
+
+        <a asp-area="Identity" asp-page="/Account/Manage/Index" class="menu_item menu_item--user-account link">
+            @if (UserManager.GetUserAsync(User).Result.ProfilePicture != null)
+            {
+                <img src="~/uploadfiles/profiles/@UserManager.GetUserAsync(User).Result.ProfilePicture">
+            }
+            else
+            {
+                <i class="icon fas fa-user"></i>
+            }
+            <span>@User.Identity.Name</span>
+            @if (ViewData["UnreadMessages"] != null)
+            {
+                if ((int)ViewData["UnreadMessages"] > 0)
+                {
+                    <small>@ViewData["UnreadMessages"]</small>
+                }
+            }
+        </a>
+
+        <ul class="sub-menu menu menu--user-account">
+            <li class="menu-item menu_item menu_item--user-edit-profile @ManageNavPages.ManageNavClass(ViewContext)">
+                <a asp-area="Identity" asp-page="/Account/Manage/Index">
+                    <span>Profile</span>
+                </a>
+            </li>
+            @if (this.User.IsInRole("Admin"))
+            {
+                <li class="menu-item menu_item menu_item--user-cultural-activity-categories @ManageNavPages.CulturalActivitiesCategoriesNavClass(ViewContext)">
+                    <a asp-area="Identity" asp-page="/Account/Manage/CulturalActivitiesCategories">
+                        <span>Cultural Activities Categories</span>
+                    </a>
+                </li>
+
+                <li class="menu-item menu_item menu_item--user-listing-categories @ManageNavPages.ListingCategoriesNavClass(ViewContext)">
+                    <a asp-area="Identity" asp-page="/Account/Manage/ListingCategories">
+                        <span>Listing Categories</span>
+                    </a>
+                </li>
+
+                <li class="menu-item menu_item menu_item--user-users @ManageNavPages.UsersNavClass(ViewContext)">
+                    <a asp-area="Identity" asp-page="/Account/Manage/Users">
+                        <span>Users</span>
+                    </a>
+                </li>
+            }
+            <li class="menu-item menu_item menu_item--culturalActivities-recommended @ManageNavPages.RecommendedCulturalActivitiesNavClass(ViewContext)">
+                <a asp-area="Identity" asp-page="/Account/Manage/RecommendedCulturalActivities">
+                    <span>Recommended Cultural Activities</span>
+                </a>
+            </li>
+            <li class="menu-item menu_item menu_item--culturalActivities-favourite @ManageNavPages.FavouriteCulturalActivitiesNavClass(ViewContext)">
+                <a asp-area="Identity" asp-page="/Account/Manage/FavouriteCulturalActivities">
+                    <span>Favourite Cultural Activities</span>
+                </a>
+            </li>
+            <li class="menu-item menu_item menu_item--culturalActivities-reviews @ManageNavPages.ReviewsCulturalActivitiesNavClass(ViewContext)">
+                <a asp-area="Identity" asp-page="/Account/Manage/ReviewsCulturalActivities">
+                    <span>Reviews Cultural Activities</span>
+                </a>
+            </li>
+            @if (this.User.IsInRole("Expert"))
+            {
+                <li class="menu-item menu_item menu_item--listings-edit @ManageNavPages.ManageListingsNavClass(ViewContext)">
+                    <a asp-area="Identity" asp-page="/Account/Manage/MyListings">
+                        <span>My Listings</span>
+                    </a>
+                </li>
+            }
+            <li class="menu-item menu_item menu_item--offers-edit @ManageNavPages.OffersNavClass(ViewContext)">
+                <a asp-area="Identity" asp-page="/Account/Manage/Offers">
+                    <span>Offers</span>
+                </a>
+            </li>
+            <li class="menu-item menu_item menu_item--messages @ManageNavPages.MessagesNavClass(ViewContext)">
+                <a asp-area="Identity" asp-page="/Account/Manage/Messages">
+                    <span>Messages</span>
+                    @if (ViewData["UnreadMessages"] != null)
+                    {
+                        @if ((int)ViewData["UnreadMessages"] > 0)
+                        {
+                            <small>@ViewData["UnreadMessages"]</small>
+                        }
+                    }
+                </a>
+            </li>
+            <li class="menu-item menu_item menu_item--requests-edit @ManageNavPages.ManageRequestsNavClass(ViewContext)">
+                <a asp-area="Identity" asp-page="/Account/Manage/MyRequests">
+                    <span>My Requests</span>
+                </a>
+            </li>
+            <li class="menu-item menu_item menu_item--listings-favourite @ManageNavPages.FavouriteListingsNavClass(ViewContext)">
+                <a asp-area="Identity" asp-page="/Account/Manage/FavouriteListings">
+                    <span>Favourite Listings</span>
+                </a>
+            </li>
+            <li class="menu-item menu_item menu_item--listings-reviews @ManageNavPages.ReviewsListingsNavClass(ViewContext)">
+                <a asp-area="Identity" asp-page="/Account/Manage/ReviewsListings">
+                    <span>Reviews Listings</span>
+                </a>
+            </li>
+
+            <li class="menu-item menu_item menu_item--user-logout">
+                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                    <button type="submit">Sign Out</button>
+                </form>
+            </li>
+        </ul>
+
+    </li>
+}
+
+else
+{
+    <li class="menu-item menu-item--user-login @ManageNavPages.LoginNavClass(ViewContext)">
+        <a asp-area="Identity" asp-page="/Account/Login" class="menu_item menu_item--user-login link">
+            <i class="icon fas fa-sign-in-alt"></i>
+            <span>Log In</span>
+        </a>
+    </li>
+    <li class="menu-item menu-item--user-login @ManageNavPages.RegisterNavClass(ViewContext)">
+        <a asp-area="Identity" asp-page="/Account/Register" class="menu_item menu_item--user-login link">
+            <i class="icon fas fa-sign-in-alt"></i>
+            <span>Register</span>
+        </a>
+    </li>
+}
